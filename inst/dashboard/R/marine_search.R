@@ -32,7 +32,10 @@ marineSearchServer <- function(id) {
 
       })
       
-      return(reactive({ }))
+      return(reactive({
+        sel <- input$marine_data_rows_selected
+        if (length(sel) > 0) marine_list[sel,] else NULL
+      }))
     }
   )
 }

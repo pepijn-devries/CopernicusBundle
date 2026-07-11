@@ -29,6 +29,8 @@ climateAccountServer <- function(id) {
         sel <- input$treeAccount_selected
         if (length(sel) > 0) sel[[1]]$data else "Nothing selected"
       })
+      
+      return(reactive({ }))
     }
   )
 }
