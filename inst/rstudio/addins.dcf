@@ -1,0 +1,4 @@
+Name: Insert Copernicus Vars
+Description: Inserts Copernicus authentication keys in test
+Binding: cb_insert_authentication_vars
+Interactive: false

@@ -1,0 +1,33 @@
+Package: CopernicusBundle
+Title: Bundle of Copernicus Packages
+Version: 0.0.0.9000
+Authors@R: c(person("Pepijn", "de Vries", role = c("aut", "cre", "dtc"),
+    email = "pepijn.devries@outlook.com",
+    comment = c(ORCID = "0000-0002-7961-6646")))
+Author:
+    Pepijn de Vries [aut, cre, dtc] (0000-0002-7961-6646)
+Maintainer: Pepijn de Vries <pepijn.devries@outlook.com>
+Description: TODO.
+Depends:
+   R (>= 4.1.0)
+Imports:
+   bslib,
+   dplyr,
+   DT,
+   jsonlite,
+   leaflet,
+   leaflet.extras,
+   lubridate,
+   memoise,
+   rstudioapi,
+   shiny,
+   shinyWidgets
+Suggests:
+   CopernicusClimate (>= 0.0.5),
+   CopernicusDataspace (>= 0.0.3),
+   CopernicusMarine (>= 0.4.7)
+License: GPL (>= 3)
+Encoding: UTF-8
+Language: en-GB
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 8.0.0
