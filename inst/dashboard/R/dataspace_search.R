@@ -1,14 +1,19 @@
 dataspaceSearchUI <- function(id) {
   ns <- NS(id)
   tagList(
-    "TODO"
+    "TODO",
+    dataspaceQueryablesUI(ns("modQry"))
   )
 }
 
-dataspaceSearchServer <- function(id) {
+dataspaceSearchServer <- function(id, collection) {
   moduleServer(
     id,
     function(input, output, session) {
+      query <- dataspaceQueryablesServer("modQry", collection)
+      
+      observe({ query() }) #TODO
+      
       return(reactive({ }))
     }
   )
