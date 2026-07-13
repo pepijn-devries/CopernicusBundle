@@ -1,14 +1,33 @@
 dataspaceQueryablesUI <- function(id) {
   ns <- NS(id)
   tagList(
-    "qbl TODO",
-    uiOutput(ns("queryUI"))
+    actionButton(ns("btnSearch"), "Search"),
+    bslib::layout_column_wrap(
+      bslib::card(
+        full_screen = TRUE,
+        bslib::card_title("Select Area"),
+        bslib::card_body(
+          geoboxUI(ns("queryBbox")) # TODO hide/unhide based on queryables
+        )
+      ),
+      bslib::card(
+        full_screen = TRUE,
+        bslib::card_title("Filters"),
+        bslib::card_body(uiOutput(ns("queryUI")))
+      )
+    )
   )
 }
 
 dataspaceQueryablesServer <- function(id, collection) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
+    
+    bbox_mod <- geoboxServer("queryBbox")
+    observe({
+      bbox_mod() #TODO
+    })
+    
     iv_val <- reactiveVal(shinyvalidate::InputValidator$new())
     
     queryables <- reactive({
@@ -99,6 +118,12 @@ dataspaceQueryablesServer <- function(id, collection) {
       iv_val()$enable()
     })
 
+    observeEvent(input$btnSearch, {
+      iv_val()$is_valid()
+      bb <- bbox_mod()
+      #process queryables such that they can be used in a search
+    })
+    
     return(reactive({ }))
   })
 }

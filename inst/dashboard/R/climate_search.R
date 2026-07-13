@@ -45,7 +45,7 @@ climateSearchServer <- function(id) {
           rename(any_of(c(thumbnail = "assets"))) |>
           relocate(any_of("thumbnail")) |>
           relocate(any_of(c("type", "stac_version")),
-                          .after = any_of("summaries"))
+                   .after = any_of("summaries"))
         if (nrow(dat) == 0)
           dat <- data.frame(`no results to show` = integer(),
                             check.names = FALSE)

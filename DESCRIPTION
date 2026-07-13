@@ -17,6 +17,7 @@ Imports:
    jsonlite,
    leaflet,
    leaflet.extras,
+   litedown,
    lubridate,
    memoise,
    rstudioapi,

@@ -1,7 +1,6 @@
 dataspaceSearchUI <- function(id) {
   ns <- NS(id)
   tagList(
-    "TODO",
     dataspaceQueryablesUI(ns("modQry"))
   )
 }
