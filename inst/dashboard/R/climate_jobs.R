@@ -3,7 +3,6 @@ climateJobsUI <- function(id) {
   tagList(
     "TODO",
     actionButton(ns("btnUpdate"), "Update jobs"),
-    downloadButton(ns("btnDownload"), "Download job"),
     actionButton(ns("btnRemove"), "Remove job"),
     DT::dataTableOutput(ns("dtJobs"))
   )
@@ -23,49 +22,67 @@ climateJobsServer <- function(id) {
       
       get_selected_jobs <- reactive({
         sel <- input$dtJobs_rows_selected
-        get_jobs()$jobID[sel]
+        get_jobs()[sel,]
       })
       
-      output$btnDownload <- downloadHandler(\() {
-        job <- get_selected_jobs()
-        details <- tryCatch({
-          CopernicusClimate::cds_job_results(job)
-        }, error = \(e) {
-          showModal(modalDialog(paste(e$body, collapse = " - ")))
-          NULL
-        })
-        if (is.null(details)) req(FALSE)
-        tempfile() #TODO
-      }, \(file){
-        browser() #TODO
-        con <- file(file, "wb")
-        close(con)
-      })
-
       observeEvent(input$btnRemove, {
         CopernicusClimate::cds_delete_job(
-          get_selected_jobs()
+          get_selected_jobs()$jobID
         )
         job_update(job_update() + 1)
       })
       
       output$dtJobs <- DT::renderDataTable({
-        DT::datatable({
-          dat <- get_jobs()
-          dat <-
-            dat |>
-            mutate(
-              across(
-                any_of(c("created", "started", "finished", "updated")), ~
+        dat <-
+          get_jobs()
+        dat <-
+          dat |>
+          mutate(
+            across(
+              any_of(c("created", "started", "finished", "updated")), ~
                 {
                   difft <- Sys.time() - lubridate::as_datetime(.x)
                   sprintf("%.1f %s", as.numeric(difft), attr(difft, "units"))
-                })
-            )
-          if (nrow(dat) == 0)
-            dat <- data.frame(`no jobs to show` = integer(), check.names = FALSE)
+                }),
+            file = lapply(.data$metadata, \(md) {
+              bind_cols(
+                as.data.frame(md[["results"]]) |>
+                  select(-any_of(c("title", "type", "status"))),
+                as.data.frame(md[["datasetMetadata"]])
+              )
+            })
+          ) |>
+          select(-any_of("links")) |>
+          unnest("file") |>
+          mutate(
+            file = ifelse(is.na(.data$asset.value.href),
+                          "-",
+                          sprintf("<a href='%s'>download</a>",
+                                  .data$asset.value.href)),
+            asset.value.file.size =
+              ifelse(is.na(.data$asset.value.file.size),
+                     0, .data$asset.value.file.size),
+            asset.value.file.size = lapply(
+              .data$asset.value.file.size,
+              utils:::format.object_size, units = "auto") |>
+              unlist()
+          ) |>
+          rename(file.size = "asset.value.file.size") |>
+          relocate(any_of("file"), .after = any_of("metadata")) |>
+          select(-starts_with("asset"), -any_of("metadata"))
+        if (nrow(dat) == 0)
+          dat <- data.frame(`no jobs to show` = integer(), check.names = FALSE)
+        DT::datatable({
           dat
-        })
+        },
+        rownames = FALSE,
+        selection = "single",
+        options = list(
+          searching = FALSE,
+          paging = FALSE
+        ),
+        escape = -which(
+          names(dat) %in% c("file")))
       })
       
       return(reactive({ }))

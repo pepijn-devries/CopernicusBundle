@@ -24,9 +24,8 @@ climatePrepareServer <- function(id, product) {
       })
       
       mod_qry <- climateQueryablesServer("mod_qry", product_form)
-      observe({ mod_qry() }) #TODO
       
-      return(reactive({ }))
+      return(mod_qry)
     }
   )
 }
