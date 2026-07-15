@@ -1,8 +1,11 @@
 climateQueryablesUI <- function(id) {
   ns <- NS(id)
-  tagList(
-    textOutput(ns("txtProduct")),
-    actionButton(ns("btnRequest"), "Request"),
+  bslib::card(
+    full_screen = TRUE,
+    bslib::toolbar(
+      actionButton(ns("btnRequest"), "Request"),
+      textOutput(ns("txtProduct"))
+    ),
     bslib::layout_column_wrap(
       bslib::card(
         full_screen = TRUE,
