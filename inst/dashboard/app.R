@@ -1,7 +1,11 @@
 library(shiny)
 library(dplyr)
+library(future)
+library(promises)
 library(rlang)
 library(tidyr)
+
+plan(multisession) ## In order to handle long running searches
 
 ui <- bslib::page_navbar(
   title   = "CopernicusBundle",

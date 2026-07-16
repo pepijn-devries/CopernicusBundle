@@ -1,9 +1,11 @@
 climateJobsUI <- function(id) {
   ns <- NS(id)
   tagList(
-    "TODO",
-    actionButton(ns("btnUpdate"), "Update jobs"),
-    actionButton(ns("btnRemove"), "Remove job"),
+    bslib::toolbar(
+      gap = 5,
+      actionButton(ns("btnUpdate"), "Update jobs"),
+      actionButton(ns("btnRemove"), "Remove job")
+    ),
     DT::dataTableOutput(ns("dtJobs"))
   )
 }
@@ -41,8 +43,10 @@ climateJobsServer <- function(id) {
             across(
               any_of(c("created", "started", "finished", "updated")), ~
                 {
-                  difft <- Sys.time() - lubridate::as_datetime(.x)
-                  sprintf("%.1f %s", as.numeric(difft), attr(difft, "units"))
+                  lapply(.x, \(z) {
+                    difft <- Sys.time() - lubridate::as_datetime(z)
+                    sprintf("%.1f %s", as.numeric(difft), attr(difft, "units"))
+                  }) |> unlist()
                 }),
             file = lapply(.data$metadata, \(md) {
               bind_cols(
@@ -76,7 +80,7 @@ climateJobsServer <- function(id) {
           dat
         },
         rownames = FALSE,
-        selection = "single",
+        selection = "multiple",
         options = list(
           searching = FALSE,
           paging = FALSE
