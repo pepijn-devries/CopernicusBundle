@@ -1,5 +1,6 @@
 library(shiny)
 library(dplyr)
+library(rlang)
 library(tidyr)
 
 ui <- bslib::page_navbar(

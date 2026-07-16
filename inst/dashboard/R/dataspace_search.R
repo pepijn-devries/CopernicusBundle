@@ -1,19 +1,162 @@
 dataspaceSearchUI <- function(id) {
   ns <- NS(id)
   tagList(
-    dataspaceQueryablesUI(ns("modQry"))
+    bslib::toolbar(
+      gap = 5,
+      textOutput(ns("txtCollection")),
+      actionButton(ns("btnUpdate"), "Update Queryables"),
+      numericInput(ns("numLimit"), "Limit", 10L, 1L, 1000L, 1L),
+      actionButton(ns("btnSearch"), "Search")
+    ),
+    bslib::layout_column_wrap(
+      bslib::card(
+        full_screen = TRUE,
+        bslib::card_title("Select Area"),
+        bslib::card_body(
+          geoboxUI(ns("queryBbox")) # TODO hide/unhide based on queryables
+        )
+      ),
+      bslib::card(
+        full_screen = TRUE,
+        bslib::card_title("Filters"),
+        bslib::card_body(uiOutput(ns("queryUI")))
+      )
+    )
   )
 }
 
 dataspaceSearchServer <- function(id, collection) {
-  moduleServer(
-    id,
-    function(input, output, session) {
-      query <- dataspaceQueryablesServer("modQry", collection)
+  moduleServer(id, function(input, output, session) {
+    ns <- session$ns
+    iv_val <- reactiveVal(shinyvalidate::InputValidator$new())
+    query <- reactiveVal()
+    
+    bbox_mod <- geoboxServer("queryBbox")
+
+    output$txtCollection <- renderText({
+      cn <- collection()
+      if (is.null(cn)) "Select a collection first from 'collections' tab" else {
+        paste("Collection:", cn$id)
+      }
+    })
+    
+    queryables <- reactive({
+      cn <- collection()
+      input$btnUpdate
       
-      observe({ query() }) #TODO
+      if (is.null(cn)) {
+        NULL
+      } else {
+        tryCatch({
+          CopernicusDataspace::dse_stac_queryables(
+            cn$id
+          )
+        }, error = \(e) NULL)
+      }
+    })
+    
+    output$queryUI <- renderUI({
+      qrb <- queryables()
       
-      return(reactive({ }))
-    }
-  )
+      if (is.null(qrb)) {
+        "Select a collection first"
+      } else {
+        uis <-
+          lapply(names(qrb$properties), \(p_name) {
+            prop <- qrb$properties[[p_name]]
+            if (is.null(prop$type)) return(NULL)
+            widget_name <- ns(gsub("[:]", "-", p_name))
+            switch(
+              prop$type,
+              string = {
+                if (!is.null(prop$format) && prop$format == "date-time") {
+                  shinyWidgets::airDatepickerInput(
+                    widget_name, prop$title, timepicker = TRUE, range = TRUE, tz = "UTC")
+                } else if (!is.null(prop$enum)) {
+                  selectInput(
+                    widget_name, prop$title, prop$enum, multiple = TRUE)
+                } else {
+                  textInput(
+                    widget_name, prop$title, placeholde = prop$description)
+                }
+              },
+              integer = {
+                shinyWidgets::numericRangeInput(
+                  widget_name, prop$title,
+                  value = c(
+                    ifelse(is.null(prop$minimum), NA, prop$minimum),
+                    ifelse(is.null(prop$maximum), NA, prop$maximum)),
+                  step = 1,
+                  min = ifelse(is.null(prop$minimum), NA, prop$minimum),
+                  max = ifelse(is.null(prop$maximum), NA, prop$maximum)
+                )
+              },
+              number = {
+                shinyWidgets::numericRangeInput(
+                  widget_name, prop$title,
+                  value = c(
+                    ifelse(is.null(prop$minimum), NA, prop$minimum),
+                    ifelse(is.null(prop$maximum), NA, prop$maximum)),
+                  min = ifelse(is.null(prop$minimum), NA, prop$minimum),
+                  max = ifelse(is.null(prop$maximum), NA, prop$maximum)
+                )
+              },
+              "Not implemented, please file issue report")
+          })
+        do.call(tagList, uis)
+      }
+    })
+    
+    observeEvent(queryables(), {
+      qrb <- queryables()
+      if (is.null(qrb)) return()
+      iv_val()$disable() 
+      new_iv <- shinyvalidate::InputValidator$new()
+      lapply(names(qrb$properties), \(p_name) {
+        prop <- qrb$properties[[p_name]]
+        if (!is.null(prop$type) && prop$type == "string" &&
+            !is.null(prop$pattern) &&
+            !(!is.null(prop$format) && prop$format == "date-time")) {
+          widget_name <- gsub("[:]", "-", p_name)
+          
+          new_iv$add_rule(
+            widget_name,
+            shinyvalidate::compose_rules(
+              shinyvalidate::sv_optional(),
+              shinyvalidate::sv_regex(
+                prop$pattern, "Please check documentation for correct format", perl = TRUE)
+            )
+          )
+        }
+      })
+      
+      iv_val(new_iv)
+      iv_val()$enable()
+    })
+    
+    observeEvent(input$btnSearch, {
+      iv_val()$is_valid()
+      qrb <- queryables()
+      if (is.null(qrb)) {
+        modalDialog(
+          "Please select a collection from the `collections` tab first",
+          title = "Warning"
+        ) |> showModal()
+        return()
+      }
+      bb <- bbox_mod()
+      request <- list()
+      lapply(names(qrb$properties), \(p_name) {
+        widget_name <- gsub("[:]", "-", p_name)
+        request[[p_name]] <<- input[[widget_name]]
+        if (all(as.character(request[[p_name]]) == "")) request[[p_name]] <<- NULL
+      })
+      request[["bbox"]] <- bb
+      request[["collection.id"]] <- collection()$id
+      request[["limit"]] <- input$numLimit
+      query(request)
+    })
+    
+    return(query)
+  })
 }

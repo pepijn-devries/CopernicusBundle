@@ -48,12 +48,20 @@ geoboxServer <- function(id, area = \() NULL, decoration = \(x) x) {
     
     observeEvent(input$select_map_shape_click, {
       modalDialog(
-        numericInput(ns("west"), "West", sel()[[1]]),
-        numericInput(ns("east"), "East", sel()[[3]]),
-        numericInput(ns("north"), "North", sel()[[4]]),
-        numericInput(ns("south"), "South", sel()[[2]]),
+        bslib::layout_columns(
+          col_widths = c(3, 6, 3, 5, 2, 5, 3, 6, 3),
+          div(),
+          numericInput(ns("north"), "North", sel()[[4]]),
+          div(),
+          numericInput(ns("west"), "West", sel()[[1]]),
+          div(),
+          numericInput(ns("east"), "East", sel()[[3]]),
+          div(),
+          numericInput(ns("south"), "South", sel()[[2]]),
+          div()
+        ),
         title = "Refine Selection",
-        size = "xl",
+        size = "s",
         easyClose = TRUE,
         footer = tagList(
           modalButton("Dismiss"),

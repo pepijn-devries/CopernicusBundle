@@ -20,6 +20,7 @@ Imports:
    litedown,
    lubridate,
    memoise,
+   rlang,
    rstudioapi,
    shiny,
    shinyWidgets
