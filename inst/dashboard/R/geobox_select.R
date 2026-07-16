@@ -8,8 +8,80 @@ geoboxServer <- function(id, area = \() NULL, decoration = \(x) x) {
     ns <- session$ns
     sel <- reactiveVal(c(-180, -90, 180, 90))
     
+    geodialog <- modalDialog(
+      bslib::layout_columns(
+        col_widths = c(3, 6, 3, 5, 2, 5, 3, 6, 3),
+        div(),
+        numericInput(ns("north"), "North", 90),
+        div(),
+        numericInput(ns("west"), "West", -180),
+        div(),
+        numericInput(ns("east"), "East", 180),
+        div(),
+        numericInput(ns("south"), "South", -90),
+        div()
+      ),
+      title = "Refine Selection",
+      size = "l",
+      easyClose = TRUE,
+      footer = tagList(
+        modalButton("Dismiss"),
+        actionButton(ns("btnAccept"), "Accept")
+      )
+    )
+    
+    is_missing <- \(x) {
+      is.null(x) || all(is.na(x))
+    }
+    validator <- shinyvalidate::InputValidator$new()
+    validator$add_rule(
+      "north", function(value) {
+        if (is_missing(value) || is_missing(input$south)) {
+          return("Coordinates cannot be missing")
+        } else  if (value <= input$south) {
+          return("North value should always be greater then South value")
+        } else if ((value - input$south) > 180) {
+          return("Difference between North and South should by no more than 180 degrees")
+        }
+      }
+    )
+    validator$add_rule(
+      "south", function(value) {
+        if (is_missing(value) || is_missing(input$north)) {
+          return("Coordinates cannot be missing")
+        } else if (value >= input$north) {
+          return("South value should always be less then South value")
+        } else if ((input$north - value) > 180) {
+          return("Difference between North and South should by no more than 180 degrees")
+        }
+      }
+    )
+    validator$add_rule(
+      "east", function(value) {
+        if (is_missing(value) || is_missing(input$west)) {
+          return("Coordinates cannot be missing")
+        } else if (value <= input$west) {
+          return("East value should always be greater then West value")
+        } else if ((value - input$west) > 360) {
+          return("Difference between East and West should by no more than 360 degrees")
+        }
+      }
+    )
+    validator$add_rule(
+      "west", function(value) {
+        if (is_missing(value) || is_missing(input$east)) {
+          return("Coordinates cannot be missing")
+        } else if (value >= input$east) {
+          return("West value should always be less then East value")
+        } else if ((input$east - value) > 360) {
+          return("Difference between East and West should by no more than 360 degrees")
+        }
+      }
+    )
+    validator$enable()
+    
     output$select_map <- leaflet::renderLeaflet({
-      area() #TODO
+      area() #TODO If range is specified, it should be used in validation
       leaflet::leaflet() |>
         leaflet::addTiles() |>
         decoration() |>
@@ -47,34 +119,18 @@ geoboxServer <- function(id, area = \() NULL, decoration = \(x) x) {
     }
     
     observeEvent(input$select_map_shape_click, {
-      modalDialog(
-        bslib::layout_columns(
-          col_widths = c(3, 6, 3, 5, 2, 5, 3, 6, 3),
-          div(),
-          numericInput(ns("north"), "North", sel()[[4]]),
-          div(),
-          numericInput(ns("west"), "West", sel()[[1]]),
-          div(),
-          numericInput(ns("east"), "East", sel()[[3]]),
-          div(),
-          numericInput(ns("south"), "South", sel()[[2]]),
-          div()
-        ),
-        title = "Refine Selection",
-        size = "s",
-        easyClose = TRUE,
-        footer = tagList(
-          modalButton("Dismiss"),
-          actionButton(ns("btnAccept"), "Accept")
-        )
-      ) |>
-        showModal()
+      showModal(geodialog)
     })
     
     observeEvent(input$btnAccept, {
-      #TODO validate input
-      sel(c(input$west, input$south, input$east, input$north))
-      removeModal()
+      if (validator$is_valid()) {
+        removeModal()
+        sel(c(input$west, input$south, input$east, input$north))
+      } else {
+        modalDialog("Your input is invalid. It will be ignored",
+                    title = "Warning") |>
+          showModal()
+      }
     })
     
     observe({
