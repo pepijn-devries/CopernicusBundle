@@ -2,18 +2,35 @@
 % Please edit documentation in R/authenticate.R
 \name{cb_authentication_vars}
 \alias{cb_authentication_vars}
-\title{TODO}
+\title{List Environment Variables for Storing Account Details}
 \usage{
 cb_authentication_vars(package, which, hint = TRUE, ...)
 }
 \arguments{
-\item{package}{TODO}
+\item{package}{Package for which to show the variables.
+If missing (default) variables for all implemented packages
+are returned}
 
-\item{which}{TODO}
+\item{which}{A string indicating which variables to return.
+Only applicable when \code{package="CopernicusDataspace"}, it
+can be any of \code{c("s3", "public_api", "private_api")}.}
+
+\item{hint}{A \code{logical} value. If set to \code{true}, hints are shown.
+They are included as comments (starting with \verb{#}).}
+
+\item{...}{TODO}
 }
 \value{
-TODO
+A vector of \code{character} strings, listing the variables
+as they should appear in your \code{.renviron} file.
 }
 \description{
-TODO
+All implemented Copernicus packages use Environment variables
+to easily and automatically access account details. This
+way you don't have to store sensitive information in your
+scripts. This function returns all variables, as you
+would need to store them in the \code{.renviron} file.
+}
+\examples{
+cb_authentication_vars()
 }

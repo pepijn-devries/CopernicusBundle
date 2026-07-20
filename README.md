@@ -1,0 +1,41 @@
+
+# CopernicusBundle <img src="man/figures/logo.svg" align="right" height="139" alt="logo" />
+
+<!-- badges: start -->
+
+![Status:
+Experimental](https://img.shields.io/badge/status-experimental-orange)<!-- badges: end -->
+
+The goal of CopernicusBundle is to bundle the powers of the individual
+Copernicus packages:
+
+- [CopernicusClimate](https://pepijn-devries.github.io/CopernicusClimate/)
+  <img src='inst/dashboard/www/logo-climate.png' alt='logo'
+  style='display: inline; vertical-align: middle; width: 32px;' />
+- [CopernicusDataspace](https://pepijn-devries.github.io/CopernicusDataspace/)
+  <img src='inst/dashboard/www/logo-dataspace.png' alt='logo'
+  style='display: inline; vertical-align: middle; width: 32px;' />
+- [CopernicusMarine](https://pepijn-devries.github.io/CopernicusMarine/)
+  <img src='inst/dashboard/www/logo-marine.png' alt='logo'
+  style='display: inline; vertical-align: middle; width: 32px;' />
+
+This bundle packages provides some additional features to the listed
+above, and a convenient central place to manage account details.
+
+This package also provides a graphical user interface in the form of a
+[Shiny](https://shiny.posit.co/) app.
+
+## Installation
+
+You can install the development version of CopernicusBundle from
+[GitHub](https://github.com/) with:
+
+``` r
+# install.packages("pak")
+pak::pak("pepijn-devries/CopernicusBundle")
+```
+
+## Notes
+
+Note that this package is under heavy development and still highly
+experimental. Use at your own risk.

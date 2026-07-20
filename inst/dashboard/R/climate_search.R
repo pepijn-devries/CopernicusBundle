@@ -27,25 +27,25 @@ climateSearchServer <- function(id) {
       
       output$searchResult <- DT::renderDT({
         dat <- search_result() |>
-          select(-any_of("links")) |>
-          unnest(any_of("providers")) |>
-          mutate(
-            across(any_of("description"),
+          dplyr::select(-tidyr::any_of("links")) |>
+          tidyr::unnest(tidyr::any_of("providers")) |>
+          dplyr::mutate(
+            dplyr::across(tidyr::any_of("description"),
                    ~sprintf("<a href='#%i'>description</a>", row_number()) |>
                      as.character()),
-            across(any_of("keywords"),
+            dplyr::across(tidyr::any_of("keywords"),
                    ~sprintf("<a href='#%i'>keywords</a>", row_number()) |>
                      as.character()),
-            across(any_of("assets"), ~ lapply(.x, \(x) {
+            dplyr::across(tidyr::any_of("assets"), ~ lapply(.x, \(x) {
               if ("thumbnail" %in% unlist(x$roles)) {
                 sprintf("<img src='%s' width='85px'>",  x$href)
               } else ""
             }))
           ) |>
-          rename(any_of(c(thumbnail = "assets"))) |>
-          relocate(any_of("thumbnail")) |>
-          relocate(any_of(c("type", "stac_version")),
-                   .after = any_of("summaries"))
+          dplyr::rename(tidyr::any_of(c(thumbnail = "assets"))) |>
+          dplyr::relocate(tidyr::any_of("thumbnail")) |>
+          dplyr::relocate(tidyr::any_of(c("type", "stac_version")),
+                   .after = tidyr::any_of("summaries"))
         if (nrow(dat) == 0)
           dat <- data.frame(`no results to show` = integer(),
                             check.names = FALSE)

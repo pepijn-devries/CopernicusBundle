@@ -7,23 +7,32 @@ Authors@R: c(person("Pepijn", "de Vries", role = c("aut", "cre", "dtc"),
 Author:
     Pepijn de Vries [aut, cre, dtc] (0000-0002-7961-6646)
 Maintainer: Pepijn de Vries <pepijn.devries@outlook.com>
-Description: TODO.
+Description: Provides additional features for Copernicus packages:
+    CopernicusClimate, CopernicusDataspace and CopernicusMarine.
+    Convenient management of account details for all packages
+    and a graphical user interface using Shiny.
 Depends:
    R (>= 4.1.0)
 Imports:
    bslib,
    dplyr,
    DT,
+   future,
    jsonlite,
+   jsTreeR,
    leaflet,
    leaflet.extras,
    litedown,
    lubridate,
    memoise,
+   promises,
    rlang,
    rstudioapi,
+   sf,
    shiny,
-   shinyWidgets
+   shinyvalidate,
+   shinyWidgets,
+   tidyr
 Suggests:
    CopernicusClimate (>= 0.0.5),
    CopernicusDataspace (>= 0.0.3),

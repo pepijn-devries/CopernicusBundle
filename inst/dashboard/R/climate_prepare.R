@@ -62,8 +62,8 @@ climatePrepareServer <- function(id, product) {
         
         widgets <-
           fm |>
-          rowwise() |>
-          mutate(
+          dplyr::rowwise() |>
+          dplyr::mutate(
             widget = list({
               det <- .data$details$details
               ## area is handled with leaflet widget:
@@ -96,22 +96,22 @@ climatePrepareServer <- function(id, product) {
                   StringListArrayWidget = {
                     if (det$accordionGroups) {
                       dat <-
-                        det$groups |> lapply(as_tibble) |>
-                        bind_rows() |>
-                        unnest(c("values", "labels")) |>
-                        group_by(across("label")) |>
-                        summarise(
+                        det$groups |> lapply(tidyr::as_tibble) |>
+                        dplyr::bind_rows() |>
+                        tidyr::unnest(c("values", "labels")) |>
+                        dplyr::group_by(dplyr::across("label")) |>
+                        dplyr::summarise(
                           widget = list(setNames(.data$values, .data$labels)),
                           .groups = "keep"
                         ) |>
-                        ungroup() |>
-                        summarise(
+                        dplyr::ungroup() |>
+                        dplyr::summarise(
                           all = list({
                             setNames(.data$widget,
                                      .data$label)
                           }
                           )) |>
-                        pull("all")
+                        dplyr::pull("all")
                       shinyWidgets::virtualSelectInput(
                         widget_name,
                         .data$name,
@@ -138,8 +138,8 @@ climatePrepareServer <- function(id, product) {
                     dat <-
                       det$licences |>
                       lapply(as.data.frame) |>
-                      bind_rows() |>
-                      mutate(
+                      dplyr::bind_rows() |>
+                      dplyr::mutate(
                         contents_url = {
                           lapply(.data$contents_url, \(cu) {
                             tryCatch({
@@ -154,8 +154,8 @@ climatePrepareServer <- function(id, product) {
                                   .data$attachment_url,
                                   .data$spdx_identifier)
                       ) |>
-                      select(!any_of("attachment_url")) |>
-                      rename(contents = "contents_url")
+                      dplyr::select(!tidyr::any_of("attachment_url")) |>
+                      dplyr::rename(contents = "contents_url")
                     tagList(
                       tags$label(
                         "Licences",
@@ -188,7 +188,7 @@ climatePrepareServer <- function(id, product) {
               }
             })
           ) |>
-          pull(widget)
+          dplyr::pull(widget)
         do.call(tagList, widgets)
       }
     })

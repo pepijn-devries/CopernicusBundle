@@ -1,9 +1,17 @@
 marineSearchUI <- function(id) {
   ns <- NS(id)
+  tab_name <- "marine_data"
+  module_css <- sprintf("
+    #%s .dataTables_scrollBody { transform: rotateX(180deg); }
+    #%s .dataTables_scrollBody table { transform: rotateX(180deg); }
+  ", ns(tab_name), ns(tab_name))
+  
   tagList(
-    actionButton(ns("btnUpdate"), "Update product list"),
-    DT::DTOutput(ns("marine_data")),
-    "TODO"
+    tags$head(tags$style(HTML(module_css))),
+    bslib::toolbar(
+      actionButton(ns("btnUpdate"), "Update product list")
+    ),
+    DT::DTOutput(ns(tab_name))
   )
 }
 
@@ -22,17 +30,18 @@ marineSearchServer <- function(id) {
       marine_edit <-
         reactive({
           marine_list() |>
-            mutate(
-              across(any_of("thumbnailUrl"), ~ 
+            dplyr::mutate(
+              dplyr::across(tidyr::any_of("thumbnailUrl"), ~ 
                        sprintf("<img src='%s' width='85px'>",  .x))
             ) |>
-            rename(any_of(c(thumbnail = "thumbnailUrl"))) |>
-            relocate(any_of("thumbnail"))
+            dplyr::rename(tidyr::any_of(c(thumbnail = "thumbnailUrl"))) |>
+            dplyr::relocate(tidyr::any_of("thumbnail"))
         })
       
       output$marine_data <- DT::renderDT({
         marine_edit() |>
           DT::datatable(
+            options = list(scrollX = TRUE),
             rownames = FALSE,
             selection = "single",
             escape = -which(

@@ -33,23 +33,18 @@ climatePageServer <- function(id) {
       licens  <- climateLicensesServer("licensesMod")
       account <- climateAccountServer("accountMod")
       
-      observeEvent(
-        search(), {
-          bslib::nav_select("climate_nav", "climate_prepare")
-        })
-
-      observeEvent(
-        prepare(), {
-          bslib::nav_select("climate_nav", "climate_request")
-        })
-
-      observeEvent(
-        request(), {
-          bslib::nav_select("climate_nav", "climate_jobs")
-        })
+      observeEvent( search(), {
+        bslib::nav_select("climate_nav", "climate_prepare")
+      })
       
-      observe({ prepare() })
-      observe({ request() })
+      observeEvent( prepare(), {
+        bslib::nav_select("climate_nav", "climate_request")
+      })
+      
+      observeEvent( request(), {
+        bslib::nav_select("climate_nav", "climate_jobs")
+      })
+      
       observe({ jobs() })
       observe({ licens() })
       observe({ account() })

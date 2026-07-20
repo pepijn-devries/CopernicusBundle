@@ -39,9 +39,9 @@ climateJobsServer <- function(id) {
           get_jobs()
         dat <-
           dat |>
-          mutate(
-            across(
-              any_of(c("created", "started", "finished", "updated")), ~
+          dplyr::mutate(
+            dplyr::across(
+              tidyr::any_of(c("created", "started", "finished", "updated")), ~
                 {
                   lapply(.x, \(z) {
                     difft <- Sys.time() - lubridate::as_datetime(z)
@@ -49,16 +49,16 @@ climateJobsServer <- function(id) {
                   }) |> unlist()
                 }),
             file = lapply(.data$metadata, \(md) {
-              bind_cols(
+              dplyr::bind_cols(
                 as.data.frame(md[["results"]]) |>
-                  select(-any_of(c("title", "type", "status"))),
+                  dplyr::select(-tidyr::any_of(c("title", "type", "status"))),
                 as.data.frame(md[["datasetMetadata"]])
               )
             })
           ) |>
-          select(-any_of("links")) |>
-          unnest("file") |>
-          mutate(
+          dplyr::select(-tidyr::any_of("links")) |>
+          tidyr::unnest("file") |>
+          dplyr::mutate(
             file = ifelse(is.na(.data$asset.value.href),
                           "-",
                           sprintf("<a href='%s'>download</a>",
@@ -71,9 +71,9 @@ climateJobsServer <- function(id) {
               utils:::format.object_size, units = "auto") |>
               unlist()
           ) |>
-          rename(file.size = "asset.value.file.size") |>
-          relocate(any_of("file"), .after = any_of("metadata")) |>
-          select(-starts_with("asset"), -any_of("metadata"))
+          dplyr::rename(file.size = "asset.value.file.size") |>
+          dplyr::relocate(tidyr::any_of("file"), .after = tidyr::any_of("metadata")) |>
+          dplyr::select(-tidyr::starts_with("asset"), -tidyr::any_of("metadata"))
         if (nrow(dat) == 0)
           dat <- data.frame(`no jobs to show` = integer(), check.names = FALSE)
         DT::datatable({

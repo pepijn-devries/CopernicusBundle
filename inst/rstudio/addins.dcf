@@ -2,3 +2,8 @@ Name: Insert Copernicus Vars
 Description: Inserts Copernicus authentication keys in test
 Binding: cb_insert_authentication_vars
 Interactive: false
+
+Name: Build Copernicus Climate Request
+Description: Create a Copernicus Climate request using a graphical user interface
+Binding: cb_climate_prepare_job
+Interactive: false

@@ -14,10 +14,10 @@ dataspaceCollectionsServer <- function(id) {
       output$collections <- DT::renderDT({
         DT::datatable({
           collections |>
-            mutate(
+            dplyr::mutate(
               keywords = lapply(.data$keywords, paste, collapse = ", ") |>
                 unlist()) |>
-            select(any_of(c("id", "title", "description", "type", "keywords")))
+            dplyr::select(tidyr::any_of(c("id", "title", "description", "type", "keywords")))
         },
         rownames = FALSE,
         selection = "single")

@@ -18,7 +18,7 @@ dataspaceSearchResultServer <- function(id, search) {
             sf::st_bbox(crs = 4326)
           req <-
             CopernicusDataspace::dse_stac_search_request(srch$collection.id) |>
-            slice_head(n = srch$limit) |>
+            dplyr::slice_head(n = srch$limit) |>
             sf::st_intersects(bbox)
           
           filters <- setdiff(names(srch), c("collection.id", "bbox", "limit"))
@@ -29,17 +29,17 @@ dataspaceSearchResultServer <- function(id, search) {
               next
             if ((is.null(val1) || is.na(val1))) {
               req <- req |>
-                filter(!!ft <= !!val2)
+                dplyr::filter(!!ft <= !!val2)
             } else if ((is.null(val1) || is.na(val1))) {
               req <- req |>
-                filter(!!ft >= !!val1)
+                dplyr::filter(!!ft >= !!val1)
             } else {
               req <- req |>
-                filter(!!ft >= !!val1 & !!ft <= !!val2)
+                dplyr::filter(!!ft >= !!val1 & !!ft <= !!val2)
             }
           }
           tryCatch({
-            res <- req |> collect()
+            res <- req |> dplyr::collect()
             if (nrow(res) == 0)
               res <- data.frame(`Zero search results` = integer(), check.names = FALSE)
             res

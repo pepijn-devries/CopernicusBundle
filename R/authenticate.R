@@ -1,9 +1,23 @@
-#' TODO
+#' List Environment Variables for Storing Account Details
 #' 
-#' TODO
-#' @param package TODO
-#' @param which TODO
-#' @returns TODO
+#' All implemented Copernicus packages use Environment variables
+#' to easily and automatically access account details. This
+#' way you don't have to store sensitive information in your
+#' scripts. This function returns all variables, as you
+#' would need to store them in the `.renviron` file.
+#' @param package Package for which to show the variables.
+#' If missing (default) variables for all implemented packages
+#' are returned
+#' @param which A string indicating which variables to return.
+#' Only applicable when `package="CopernicusDataspace"`, it
+#' can be any of `c("s3", "public_api", "private_api")`.
+#' @param hint A `logical` value. If set to `true`, hints are shown.
+#' They are included as comments (starting with `#`).
+#' @param ... TODO
+#' @returns A vector of `character` strings, listing the variables
+#' as they should appear in your `.renviron` file.
+#' @examples
+#' cb_authentication_vars()
 #' @export
 cb_authentication_vars <- function(package, which, hint = TRUE, ...) {
   if (missing(package)) package <- ""
@@ -62,6 +76,14 @@ cb_authentication_vars <- function(package, which, hint = TRUE, ...) {
   )
 }
 
+#' TODO
+#' 
+#' TODO
+#' @param ... TODO
+#' @returns TODO
+#' @examples
+#' # TODO
+#' 
 #' @export
 cb_insert_authentication_vars <- function(...) {
   rstudioapi::insertText(

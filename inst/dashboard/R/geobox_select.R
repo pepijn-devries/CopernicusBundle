@@ -114,7 +114,7 @@ geoboxServer <- function(id, area = \() NULL, decoration = \(x) x) {
       coords <-
         feature$geometry$coordinates[[1]] |>
         lapply(as.data.frame, col.names = c("x", "y")) |>
-        bind_rows()
+        dplyr::bind_rows()
       sel(c(min(coords$x), min(coords$y), max(coords$x), max(coords$y)))
     }
     
