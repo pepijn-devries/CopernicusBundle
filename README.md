@@ -41,3 +41,10 @@ pak::pak("pepijn-devries/CopernicusBundle")
 
 Note that this package is under heavy development and still highly
 experimental. Use at your own risk.
+
+## Code of Conduct
+
+Please note that the CopernicusBundle project is released with a
+[Contributor Code of
+Conduct](https://contributor-covenant.org/version/2/1/CODE_OF_CONDUCT.html).
+By contributing to this project, you agree to abide by its terms.
