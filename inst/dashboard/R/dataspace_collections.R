@@ -1,12 +1,12 @@
 dataspaceCollectionsUI <- function(id) {
-  ns <- NS(id)
-  tagList(
+  ns <- shiny::NS(id)
+  shiny::tagList(
     DT::DTOutput(ns("collections"))
   )
 }
 
 dataspaceCollectionsServer <- function(id) {
-  moduleServer(
+  shiny::moduleServer(
     id,
     function(input, output, session) {
       collections <- CopernicusDataspace::dse_stac_collections()
@@ -23,7 +23,7 @@ dataspaceCollectionsServer <- function(id) {
         selection = "single")
       })
       
-      return(reactive({
+      return(shiny::reactive({
         sel <- input$collections_rows_selected
         if (length(sel) > 0)
           collections[sel,] else NULL

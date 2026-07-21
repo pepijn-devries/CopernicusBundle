@@ -1,17 +1,17 @@
 marineAccountUI <- function(id) {
-  ns <- NS(id)
-  tagList(
-    actionButton(ns("btnUpdate"), "Update"),
-    textOutput(ns("field")),
+  ns <- shiny::NS(id)
+  shiny::tagList(
+    shiny::actionButton(ns("btnUpdate"), "Update"),
+    shiny::textOutput(ns("field")),
     jsTreeR::jstreeOutput(ns("treeAccount"))
   )
 }
 
 marineAccountServer <- function(id) {
-  moduleServer(
+  shiny::moduleServer(
     id,
     function(input, output, session) {
-      my_tree <- reactive({
+      my_tree <- shiny::reactive({
         input$btnUpdate
         jsTreeR::jstree(
           convert_to_jstree(
@@ -24,12 +24,12 @@ marineAccountServer <- function(id) {
         my_tree()
       })
       
-      output$field <- renderText({
+      output$field <- shiny::renderText({
         sel <- input$treeAccount_selected
         if (length(sel) > 0) sel[[1]]$data else "Nothing selected"
       })
       
-      return(reactive({ }))
+      return(shiny::reactive({ }))
     }
   )
 }

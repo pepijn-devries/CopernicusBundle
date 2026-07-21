@@ -1,5 +1,5 @@
 dataspacePageUI <- function(id) {
-  ns <- NS(id)
+  ns <- shiny::NS(id)
   if (requireNamespace("CopernicusDataspace")) {
     bslib::page_navbar(
       id = ns("dataspace_nav"),
@@ -18,30 +18,30 @@ dataspacePageUI <- function(id) {
 }
 
 dataspacePageServer <- function(id) {
-  moduleServer(
+  shiny::moduleServer(
     id,
     function(input, output, session) {
       if (!requireNamespace("CopernicusDataspace"))
-        return(reactive({ }))
+        return(shiny::reactive({ }))
       collections <- dataspaceCollectionsServer("collectionsMod")
       search      <- dataspaceSearchServer("searchMod", collections)
       searchRes   <- dataspaceSearchResultServer("searchResMod", search)
       account     <- dataspaceAccountServer("accountMod")
       
-      observeEvent(
+      shiny::observeEvent(
         collections(), {
           bslib::nav_select("dataspace_nav", "dataspace_search")
         })
       
-      observeEvent(
+      shiny::observeEvent(
         search(), {
           bslib::nav_select("dataspace_nav", "dataspace_results")
         })
       
-      observe({ searchRes() })
-      observe({ account() })
+      shiny::observe({ searchRes() })
+      shiny::observe({ account() })
       
-      return(reactive({ }))
+      return(shiny::reactive({ }))
     }
   )
 }

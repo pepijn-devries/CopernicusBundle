@@ -1,16 +1,16 @@
 dataspaceSearchResultUI <- function(id) {
-  ns <- NS(id)
-  tagList(
+  ns <- shiny::NS(id)
+  shiny::tagList(
     DT::dataTableOutput(ns("dtSearchResults"))
   )
 }
 
 dataspaceSearchResultServer <- function(id, search) {
-  moduleServer(
+  shiny::moduleServer(
     id,
     function(input, output, session) {
       
-      search_result <- ExtendedTask$new(\(srch) {
+      search_result <- shiny::ExtendedTask$new(\(srch) {
         if (is.null(srch)) return()
         promises::future_promise({
           bbox <- srch$bbox |>
@@ -48,13 +48,13 @@ dataspaceSearchResultServer <- function(id, search) {
         })
       })
       
-      observeEvent(search(), {
+      shiny::observeEvent(search(), {
         srch <- search()
         if (search_result$status() == "running") {
-          modalDialog(
+          shiny::modalDialog(
             "Please wait for the previous search to complete, before submitting a new search",
             title = "Warning", easyClose = TRUE) |>
-            showModal()
+            shiny::showModal()
         } else if (!is.null(srch)) search_result$invoke(srch)
       })
       
@@ -75,8 +75,8 @@ dataspaceSearchResultServer <- function(id, search) {
         selection = "single")
       })
       
-      outputOptions(output, "dtSearchResults", suspendWhenHidden = FALSE)
-      return(reactive({
+      shiny::outputOptions(output, "dtSearchResults", suspendWhenHidden = FALSE)
+      return(shiny::reactive({
         if (search_result$status() == "success") {
           search_result$result()
         } else {

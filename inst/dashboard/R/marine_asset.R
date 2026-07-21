@@ -1,15 +1,15 @@
 marineAssetUI <- function(id) {
-  ns <- NS(id)
-  tagList(
+  ns <- shiny::NS(id)
+  shiny::tagList(
     "TODO"
   )
 }
 
 marineAssetServer <- function(id, asset) {
-  moduleServer(
+  shiny::moduleServer(
     id,
     function(input, output, session) {
-      observe({
+      shiny::observe({
         
         browser() #TODO
         if (is.null(asset())) return(NULL)
@@ -19,7 +19,7 @@ marineAssetServer <- function(id, asset) {
         asset()
       })
       
-      return(reactive({ }))
+      return(shiny::reactive({ }))
     }
   )
 }

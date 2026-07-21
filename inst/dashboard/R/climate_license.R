@@ -1,13 +1,13 @@
 climateLicensesUI <- function(id) {
-  ns <- NS(id)
-  tagList(
-    actionButton(ns("btnUpdate"), "Update Licenses"),
+  ns <- shiny::NS(id)
+  shiny::tagList(
+    shiny::actionButton(ns("btnUpdate"), "Update Licenses"),
     DT::dataTableOutput(ns("dtLicenses"))
   )
 }
 
 climateLicensesServer <- function(id) {
-  moduleServer(
+  shiny::moduleServer(
     id,
     function(input, output, session) {
       output$dtLicenses <- DT::renderDataTable({
@@ -17,7 +17,7 @@ climateLicensesServer <- function(id) {
         )
       })
       
-      return(reactive({ }))
+      return(shiny::reactive({ }))
     }
   )
 }

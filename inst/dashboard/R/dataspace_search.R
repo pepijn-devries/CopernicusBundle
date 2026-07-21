@@ -1,12 +1,12 @@
 dataspaceSearchUI <- function(id) {
-  ns <- NS(id)
-  tagList(
+  ns <- shiny::NS(id)
+  shiny::tagList(
     bslib::toolbar(
       gap = 5,
-      textOutput(ns("txtCollection")),
-      actionButton(ns("btnUpdate"), "Update Queryables"),
-      numericInput(ns("numLimit"), "Limit", 10L, 1L, 1000L, 1L),
-      actionButton(ns("btnSearch"), "Search")
+      shiny::textOutput(ns("txtCollection")),
+      shiny::actionButton(ns("btnUpdate"), "Update Queryables"),
+      shiny::numericInput(ns("numLimit"), "Limit", 10L, 1L, 1000L, 1L),
+      shiny::actionButton(ns("btnSearch"), "Search")
     ),
     bslib::layout_column_wrap(
       bslib::card(
@@ -19,28 +19,28 @@ dataspaceSearchUI <- function(id) {
       bslib::card(
         full_screen = TRUE,
         bslib::card_title("Filters"),
-        bslib::card_body(uiOutput(ns("queryUI")))
+        bslib::card_body(shiny::uiOutput(ns("queryUI")))
       )
     )
   )
 }
 
 dataspaceSearchServer <- function(id, collection) {
-  moduleServer(id, function(input, output, session) {
+  shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
-    iv_val <- reactiveVal(shinyvalidate::InputValidator$new())
-    query <- reactiveVal()
+    iv_val <- shiny::reactiveVal(shinyvalidate::InputValidator$new())
+    query <- shiny::reactiveVal()
     
     bbox_mod <- geoboxServer("queryBbox")
 
-    output$txtCollection <- renderText({
+    output$txtCollection <- shiny::renderText({
       cn <- collection()
       if (is.null(cn)) "Select a collection first from 'collections' tab" else {
         paste("Collection:", cn$id)
       }
     })
     
-    queryables <- reactive({
+    queryables <- shiny::reactive({
       cn <- collection()
       input$btnUpdate
       
@@ -55,7 +55,7 @@ dataspaceSearchServer <- function(id, collection) {
       }
     })
     
-    output$queryUI <- renderUI({
+    output$queryUI <- shiny::renderUI({
       qrb <- queryables()
       
       if (is.null(qrb)) {
@@ -73,10 +73,10 @@ dataspaceSearchServer <- function(id, collection) {
                   shinyWidgets::airDatepickerInput(
                     widget_name, prop$title, timepicker = TRUE, range = TRUE, tz = "UTC")
                 } else if (!is.null(prop$enum)) {
-                  selectInput(
+                  shiny::selectInput(
                     widget_name, prop$title, prop$enum, multiple = TRUE)
                 } else {
-                  textInput(
+                  shiny::textInput(
                     widget_name, prop$title, placeholde = prop$description)
                 }
               },
@@ -103,11 +103,11 @@ dataspaceSearchServer <- function(id, collection) {
               },
               "Not implemented, please file issue report")
           })
-        do.call(tagList, uis)
+        do.call(shiny::tagList, uis)
       }
     })
     
-    observeEvent(queryables(), {
+    shiny::observeEvent(queryables(), {
       qrb <- queryables()
       if (is.null(qrb)) return()
       iv_val()$disable() 
@@ -134,14 +134,14 @@ dataspaceSearchServer <- function(id, collection) {
       iv_val()$enable()
     })
     
-    observeEvent(input$btnSearch, {
+    shiny::observeEvent(input$btnSearch, {
       iv_val()$is_valid()
       qrb <- queryables()
       if (is.null(qrb)) {
-        modalDialog(
+        shiny::modalDialog(
           "Please select a collection from the `collections` tab first",
           title = "Warning"
-        ) |> showModal()
+        ) |> shiny::showModal()
         return()
       }
       bb <- bbox_mod()

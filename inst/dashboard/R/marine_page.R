@@ -1,5 +1,5 @@
 marinePageUI <- function(id) {
-  ns <- NS(id)
+  ns <- shiny::NS(id)
   if (requireNamespace("CopernicusMarine")) {
     bslib::page_navbar(
       id = ns("marine_nav"),
@@ -18,28 +18,28 @@ marinePageUI <- function(id) {
 }
 
 marinePageServer <- function(id) {
-  moduleServer(
+  shiny::moduleServer(
     id,
     function(input, output, session) {
       if (!requireNamespace("CopernicusMarine"))
-        return(reactive({ }))
+        return(shiny::reactive({ }))
       search  <- marineSearchServer("searchMod")
       product <- marineProductServer("productMod", search)
       asset   <- marineAssetServer("assetMod", product)
       account <- marineAccountServer("accountMod")
 
-      observeEvent( search(), {
+      shiny::observeEvent( search(), {
         bslib::nav_select("marine_nav", "marine_product")
       })
 
-      observeEvent( product(), {
+      shiny::observeEvent( product(), {
         bslib::nav_select("marine_nav", "marine_asset")
       })
       
-      observe({ product() })
-      observe({ account() })
+      shiny::observe({ product() })
+      shiny::observe({ account() })
       
-      return(reactive({ }))
+      return(shiny::reactive({ }))
     }
   )
 }

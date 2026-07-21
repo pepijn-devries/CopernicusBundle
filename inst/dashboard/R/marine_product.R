@@ -1,20 +1,20 @@
 marineProductUI <- function(id) {
-  ns <- NS(id)
-  tagList(
-    actionButton(ns("btnUpdate"), "Update meta info"),
-    textOutput(ns("txtProduct")),
+  ns <- shiny::NS(id)
+  shiny::tagList(
+    shiny::actionButton(ns("btnUpdate"), "Update meta info"),
+    shiny::textOutput(ns("txtProduct")),
     selectInput(ns("selectDataset"), "Dataset", NULL),
-    uiOutput(ns("subsetUI"))
+    shiny::uiOutput(ns("subsetUI"))
   )
 }
 
 marineProductServer <- function(id, product) {
-  moduleServer(
+  shiny::moduleServer(
     id,
     function(input, output, session) {
       ns <- session$ns
 
-      output$txtProduct <- renderText({
+      output$txtProduct <- shiny::renderText({
         prod <- product()
         if (is.null(prod)) {
           "Please select a product in the 'search' tab"
@@ -23,7 +23,7 @@ marineProductServer <- function(id, product) {
         }
       })
       
-      product_meta <- reactive({
+      product_meta <- shiny::reactive({
         input$btnUpdate
         prod <- product()
         if (is.null(prod)) NULL else {
@@ -35,7 +35,7 @@ marineProductServer <- function(id, product) {
         }
       })
 
-      observeEvent(product_meta(), {
+      shiny::observeEvent(product_meta(), {
         meta <- product_meta()
         descript <- lapply(meta$properties, \(x) {
           if (is.null(x$admp_title)) "No description" else
@@ -43,7 +43,7 @@ marineProductServer <- function(id, product) {
         }) |>
           unlist()
         if (!is.null(meta)) {
-          updateSelectInput(
+          shiny::updateSelectInput(
             "selectDataset",
             choices = meta$id |> setNames(descript),
             selected = meta$id[[1]],
@@ -52,19 +52,19 @@ marineProductServer <- function(id, product) {
         }
       })
 
-      output$subsetUI <- renderUI({
+      output$subsetUI <- shiny::renderUI({
         meta <- product_meta()
         if (is.null(meta) || is.null(input$selectDataset))
           return("Select a dataset first")
         meta <- meta |>
           dplyr::filter(id == input$selectDataset)
-        selectInput(
+        shiny::selectInput(
           ns("selectAsset"), "Assets",
           names(meta$assets[[1]]),
           names(meta$assets[[1]])[[1]])
       })
       
-      get_asset <- reactive({
+      get_asset <- shiny::reactive({
         meta <- product_meta()
         if (is.null(meta) || is.null(input$selectDataset) ||
             is.null(input$selectAsset))

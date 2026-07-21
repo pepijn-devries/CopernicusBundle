@@ -1,20 +1,20 @@
 climateSearchUI <- function(id) {
-  ns <- NS(id)
-  tagList(
+  ns <- shiny::NS(id)
+  shiny::tagList(
     shinyWidgets::searchInput(
       ns("txtSearch"),
       "Search Copernicus Climate",
-      btnSearch = icon("magnifying-glass"), 
-      btnReset = icon("xmark")),
+      btnSearch = shiny::icon("magnifying-glass"), 
+      btnReset = shiny::icon("xmark")),
     DT::DTOutput(ns("searchResult"))
   )
 }
 
 climateSearchServer <- function(id) {
-  moduleServer(
+  shiny::moduleServer(
     id,
     function(input, output, session) {
-      search_result <- reactive({
+      search_result <- shiny::reactive({
         st <- input$txtSearch
         if (st == "") {
           data.frame()
@@ -59,7 +59,7 @@ climateSearchServer <- function(id) {
                                 "description")))
       })
       
-      return(reactive({
+      return(shiny::reactive({
         rw <- input$searchResult_rows_selected
         if (!is.null(rw) && rw > 0) {
           search_result()[rw,]

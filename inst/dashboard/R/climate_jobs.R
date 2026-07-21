@@ -1,33 +1,33 @@
 climateJobsUI <- function(id) {
-  ns <- NS(id)
-  tagList(
+  ns <- shiny::NS(id)
+  shiny::tagList(
     bslib::toolbar(
       gap = 5,
-      actionButton(ns("btnUpdate"), "Update jobs"),
-      actionButton(ns("btnRemove"), "Remove job")
+      shiny::actionButton(ns("btnUpdate"), "Update jobs"),
+      shiny::actionButton(ns("btnRemove"), "Remove job")
     ),
     DT::dataTableOutput(ns("dtJobs"))
   )
 }
 
 climateJobsServer <- function(id) {
-  moduleServer(
+  shiny::moduleServer(
     id,
     function(input, output, session) {
-      job_update <- reactiveVal(0)
+      job_update <- shiny::reactiveVal(0)
       
-      get_jobs <- reactive({
+      get_jobs <- shiny::reactive({
         input$btnUpdate
         job_update()
         CopernicusClimate::cds_list_jobs()
       })
       
-      get_selected_jobs <- reactive({
+      get_selected_jobs <- shiny::reactive({
         sel <- input$dtJobs_rows_selected
         get_jobs()[sel,]
       })
       
-      observeEvent(input$btnRemove, {
+      shiny::observeEvent(input$btnRemove, {
         CopernicusClimate::cds_delete_job(
           get_selected_jobs()$jobID
         )
@@ -89,7 +89,7 @@ climateJobsServer <- function(id) {
           names(dat) %in% c("file")))
       })
       
-      return(reactive({ }))
+      return(shiny::reactive({ }))
     }
   )
 }

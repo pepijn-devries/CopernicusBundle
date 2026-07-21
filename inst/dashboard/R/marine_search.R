@@ -1,25 +1,25 @@
 marineSearchUI <- function(id) {
-  ns <- NS(id)
+  ns <- shiny::NS(id)
   tab_name <- "marine_data"
   module_css <- sprintf("
     #%s .dataTables_scrollBody { transform: rotateX(180deg); }
     #%s .dataTables_scrollBody table { transform: rotateX(180deg); }
   ", ns(tab_name), ns(tab_name))
   
-  tagList(
-    tags$head(tags$style(HTML(module_css))),
+  shiny::tagList(
+    shiny::tags$head(tags$style(shiny::HTML(module_css))),
     bslib::toolbar(
-      actionButton(ns("btnUpdate"), "Update product list")
+      shiny::actionButton(ns("btnUpdate"), "Update product list")
     ),
     DT::DTOutput(ns(tab_name))
   )
 }
 
 marineSearchServer <- function(id) {
-  moduleServer(
+  shiny::moduleServer(
     id,
     function(input, output, session) {
-      marine_list <- reactive({
+      marine_list <- shiny::reactive({
         input$btnUpdate
         tryCatch({
           CopernicusMarine::cms_products_list()
@@ -28,7 +28,7 @@ marineSearchServer <- function(id) {
       })
 
       marine_edit <-
-        reactive({
+        shiny::reactive({
           marine_list() |>
             dplyr::mutate(
               dplyr::across(tidyr::any_of("thumbnailUrl"), ~ 
@@ -49,7 +49,7 @@ marineSearchServer <- function(id) {
 
       })
       
-      return(reactive({
+      return(shiny::reactive({
         sel <- input$marine_data_rows_selected
         if (length(sel) > 0) marine_list()[sel,] else NULL
       }))
