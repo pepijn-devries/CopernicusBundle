@@ -4,7 +4,9 @@
 <!-- badges: start -->
 
 ![Status:
-Experimental](https://img.shields.io/badge/status-experimental-orange)<!-- badges: end -->
+Experimental](https://img.shields.io/badge/status-experimental-orange)
+[![R-CMD-check](https://github.com/pepijn-devries/CopernicusBundle/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/pepijn-devries/CopernicusBundle/actions/workflows/R-CMD-check.yaml)
+<!-- badges: end -->
 
 The goal of CopernicusBundle is to bundle the powers of the individual
 Copernicus packages:
