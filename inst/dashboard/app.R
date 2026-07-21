@@ -1,5 +1,4 @@
 library(shiny)
-library(rlang)
 
 future::plan(future::multisession) ## In order to handle long running searches
 

@@ -21,11 +21,11 @@ knitr::opts_chunk$set(
 The goal of CopernicusBundle is to bundle the powers of the individual
 Copernicus packages:
 
- * [CopernicusClimate](https://pepijn-devries.github.io/CopernicusClimate/) <!-- TODO add package logo here --->
- * [CopernicusDataspace](https://pepijn-devries.github.io/CopernicusDataspace/) <!-- TODO add package logo here --->
- * [CopernicusMarine](https://pepijn-devries.github.io/CopernicusMarine/) <!-- TODO add package logo here --->
+ * [CopernicusClimate](https://pepijn-devries.github.io/CopernicusClimate/) ![logo](https://raw.githubusercontent.com/pepijn-devries/CopernicusClimate/refs/heads/main/man/figures/logo.svg){style='width: 32px; display: inline-block; vertical-align: middle'}
+ * [CopernicusDataspace](https://pepijn-devries.github.io/CopernicusDataspace/)  ![logo](https://raw.githubusercontent.com/pepijn-devries/CopernicusDataspace/refs/heads/main/man/figures/logo.svg){style='width: 32px; display: inline-block; vertical-align: middle'}
+ * [CopernicusMarine](https://pepijn-devries.github.io/CopernicusMarine/)  ![logo](https://raw.githubusercontent.com/pepijn-devries/CopernicusMarine/refs/heads/master/man/figures/logo.svg){style='width: 32px; display: inline-block; vertical-align: middle'}
 
-This bundle packages provides some additional features to the
+This bundle package provides some additional features to the packages
 listed above, and a convenient central place to manage account
 details.
 

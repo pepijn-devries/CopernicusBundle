@@ -12,14 +12,23 @@ The goal of CopernicusBundle is to bundle the powers of the individual
 Copernicus packages:
 
 - [CopernicusClimate](https://pepijn-devries.github.io/CopernicusClimate/)
-  <!-- TODO add package logo here --->
+  <img
+  src="https://raw.githubusercontent.com/pepijn-devries/CopernicusClimate/refs/heads/main/man/figures/logo.svg"
+  style="width: 32px; display: inline-block; vertical-align: middle"
+  alt="logo" />
 - [CopernicusDataspace](https://pepijn-devries.github.io/CopernicusDataspace/)
-  <!-- TODO add package logo here --->
+  <img
+  src="https://raw.githubusercontent.com/pepijn-devries/CopernicusDataspace/refs/heads/main/man/figures/logo.svg"
+  style="width: 32px; display: inline-block; vertical-align: middle"
+  alt="logo" />
 - [CopernicusMarine](https://pepijn-devries.github.io/CopernicusMarine/)
-  <!-- TODO add package logo here --->
+  <img
+  src="https://raw.githubusercontent.com/pepijn-devries/CopernicusMarine/refs/heads/master/man/figures/logo.svg"
+  style="width: 32px; display: inline-block; vertical-align: middle"
+  alt="logo" />
 
-This bundle packages provides some additional features to the listed
-above, and a convenient central place to manage account details.
+This bundle package provides some additional features to the packages
+listed above, and a convenient central place to manage account details.
 
 This package also provides a graphical user interface in the form of a
 [Shiny](https://shiny.posit.co/) app.
