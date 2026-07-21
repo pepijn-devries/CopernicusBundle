@@ -12,14 +12,11 @@ The goal of CopernicusBundle is to bundle the powers of the individual
 Copernicus packages:
 
 - [CopernicusClimate](https://pepijn-devries.github.io/CopernicusClimate/)
-  <img src='inst/dashboard/www/logo-climate.png' alt='logo'
-  style='display: inline; vertical-align: middle; width: 32px;' />
+  <!-- TODO add package logo here --->
 - [CopernicusDataspace](https://pepijn-devries.github.io/CopernicusDataspace/)
-  <img src='inst/dashboard/www/logo-dataspace.png' alt='logo'
-  style='display: inline; vertical-align: middle; width: 32px;' />
+  <!-- TODO add package logo here --->
 - [CopernicusMarine](https://pepijn-devries.github.io/CopernicusMarine/)
-  <img src='inst/dashboard/www/logo-marine.png' alt='logo'
-  style='display: inline; vertical-align: middle; width: 32px;' />
+  <!-- TODO add package logo here --->
 
 This bundle packages provides some additional features to the listed
 above, and a convenient central place to manage account details.
