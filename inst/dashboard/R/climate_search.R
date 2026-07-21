@@ -31,10 +31,10 @@ climateSearchServer <- function(id) {
           tidyr::unnest(tidyr::any_of("providers")) |>
           dplyr::mutate(
             dplyr::across(tidyr::any_of("description"),
-                   ~sprintf("<a href='#%i'>description</a>", row_number()) |>
+                   ~sprintf("<a href='#%i'>description</a>", dplyr::row_number()) |>
                      as.character()),
             dplyr::across(tidyr::any_of("keywords"),
-                   ~sprintf("<a href='#%i'>keywords</a>", row_number()) |>
+                   ~sprintf("<a href='#%i'>keywords</a>", dplyr::row_number()) |>
                      as.character()),
             dplyr::across(tidyr::any_of("assets"), ~ lapply(.x, \(x) {
               if ("thumbnail" %in% unlist(x$roles)) {
