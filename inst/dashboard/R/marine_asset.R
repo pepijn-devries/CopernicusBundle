@@ -11,7 +11,6 @@ marineAssetServer <- function(id, asset) {
     function(input, output, session) {
       shiny::observe({
         
-        browser() #TODO
         if (is.null(asset())) return(NULL)
         vsi <- CopernicusMarine:::.uri_to_vsi(asset()$href)
 #TODO
