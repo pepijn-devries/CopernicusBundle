@@ -1,32 +1,32 @@
 geoboxUI <- function(id, ...) {
-  ns <- NS(id)
+  ns <- shiny::NS(id)
   leaflet::leafletOutput(ns("select_map"), ...)
 }
 
 geoboxServer <- function(id, area = \() NULL, decoration = \(x) x) {
-  moduleServer(id, function(input, output, session) {
+  shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
-    sel <- reactiveVal(c(-180, -90, 180, 90))
+    sel <- shiny::reactiveVal(c(-180, -90, 180, 90))
     
-    geodialog <- modalDialog(
+    geodialog <- shiny::modalDialog(
       bslib::layout_columns(
         col_widths = c(3, 6, 3, 5, 2, 5, 3, 6, 3),
-        div(),
-        numericInput(ns("north"), "North", 90),
-        div(),
-        numericInput(ns("west"), "West", -180),
-        div(),
-        numericInput(ns("east"), "East", 180),
-        div(),
-        numericInput(ns("south"), "South", -90),
-        div()
+        shiny::div(),
+        shiny::numericInput(ns("north"), "North", 90),
+        shiny::div(),
+        shiny::numericInput(ns("west"), "West", -180),
+        shiny::div(),
+        shiny::numericInput(ns("east"), "East", 180),
+        shiny::div(),
+        shiny::numericInput(ns("south"), "South", -90),
+        shiny::div()
       ),
       title = "Refine Selection",
       size = "l",
       easyClose = TRUE,
-      footer = tagList(
-        modalButton("Dismiss"),
-        actionButton(ns("btnAccept"), "Accept")
+      footer = shiny::tagList(
+        shiny::modalButton("Dismiss"),
+        shiny::actionButton(ns("btnAccept"), "Accept")
       )
     )
     
@@ -118,26 +118,26 @@ geoboxServer <- function(id, area = \() NULL, decoration = \(x) x) {
       sel(c(min(coords$x), min(coords$y), max(coords$x), max(coords$y)))
     }
     
-    observeEvent(input$select_map_shape_click, {
-      showModal(geodialog)
+    shiny::observeEvent(input$select_map_shape_click, {
+      shiny::showModal(geodialog)
     })
     
-    observeEvent(input$btnAccept, {
+    shiny::observeEvent(input$btnAccept, {
       if (validator$is_valid()) {
-        removeModal()
+        shiny::removeModal()
         sel(c(input$west, input$south, input$east, input$north))
       } else {
-        modalDialog("Your input is invalid. It will be ignored",
+        shiny::modalDialog("Your input is invalid. It will be ignored",
                     title = "Warning") |>
-          showModal()
+          shiny::showModal()
       }
     })
     
-    observe({
+    shiny::observe({
       update_feat(input$select_map_draw_new_feature)
     })
 
-    observe({
+    shiny::observe({
       update_feat(input$select_map_draw_edited_features$features[[1]])
     })
 

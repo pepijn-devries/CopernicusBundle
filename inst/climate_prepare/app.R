@@ -1,20 +1,17 @@
-library(shiny)
-library(rlang)
-
-p_i <- getShinyOption("product")
+p_i <- shiny::getShinyOption("product")
 needs_product <- is.null(p_i)
 
 system.file("dashboard", "R", c("climate_prepare.R", "geobox_select.R"),
             package = "CopernicusBundle") |>
   lapply(source)
 
-ui <- fluidPage(
-  if (needs_product) textInput("txtProduct", "Product", placeholder = "Product identifier"),
+ui <- shiny::fluidPage(
+  if (needs_product) shiny::textInput("txtProduct", "Product", placeholder = "Product identifier"),
   climatePrepareUI("prepareMod")
 )
 
 server <- function(input, output, session) {
-  product <- reactive({
+  product <- shiny::reactive({
     if (needs_product) {
       product_id <- input$txtProduct
     } else {
@@ -38,9 +35,9 @@ server <- function(input, output, session) {
   
   prepare <- climatePrepareServer("prepareMod", product)
   
-  observeEvent(prepare(), {
+  shiny::observeEvent(prepare(), {
     shiny::stopApp(prepare())
   })
 }
 
-shinyApp(ui, server)
+shiny::shinyApp(ui, server)

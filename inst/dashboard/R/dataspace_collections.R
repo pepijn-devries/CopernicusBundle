@@ -1,32 +1,55 @@
 dataspaceCollectionsUI <- function(id) {
-  ns <- NS(id)
-  tagList(
+  ns <- shiny::NS(id)
+  shiny::tagList(
     DT::DTOutput(ns("collections"))
   )
 }
 
 dataspaceCollectionsServer <- function(id) {
-  moduleServer(
+  shiny::moduleServer(
     id,
     function(input, output, session) {
-      collections <- CopernicusDataspace::dse_stac_collections()
-      
-      output$collections <- DT::renderDT({
-        DT::datatable({
-          collections |>
-            dplyr::mutate(
-              keywords = lapply(.data$keywords, paste, collapse = ", ") |>
-                unlist()) |>
-            dplyr::select(tidyr::any_of(c("id", "title", "description", "type", "keywords")))
-        },
-        rownames = FALSE,
-        selection = "single")
+      collections <- shiny::ExtendedTask$new(\() {
+        promises::future_promise({
+          result <- NULL
+          while (is.null(result)) {
+            result <- tryCatch({
+              CopernicusDataspace::dse_stac_collections()
+            }, error = \(e) {Sys.sleep(5); NULL})
+          }
+          result
+        })
       })
       
-      return(reactive({
+      collections$invoke()
+
+      output$collections <- DT::renderDT({
+        busy <- data.frame(`Please wait while retrieving collections` = integer(),
+                           check.names = FALSE)
+          
+        dat <-
+          switch(
+            collections$status(),
+            initial = busy,
+            running = busy,
+            success = {
+              collections$result() |>
+                dplyr::mutate(
+                  keywords = lapply(.data$keywords, paste, collapse = ", ") |>
+                    unlist()) |>
+                dplyr::select(tidyr::any_of(c("id", "title", "description", "type", "keywords")))
+            },
+            data.frame(`Failed to retrieve collections` = integer(),
+                       check.names = FALSE)
+          )
+        DT::datatable({ dat }, rownames = FALSE, selection = "single")
+      })
+      
+      return(shiny::reactive({
+        if (collections$status() != "success") return(NULL)
         sel <- input$collections_rows_selected
         if (length(sel) > 0)
-          collections[sel,] else NULL
+          collections$result()[sel,] else NULL
       }))
     }
   )

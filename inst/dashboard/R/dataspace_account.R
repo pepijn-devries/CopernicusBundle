@@ -1,15 +1,15 @@
 dataspaceAccountUI <- function(id) {
-  ns <- NS(id)
-  tagList(
+  ns <- shiny::NS(id)
+  shiny::tagList(
     "TODO"
   )
 }
 
 dataspaceAccountServer <- function(id) {
-  moduleServer(
+  shiny::moduleServer(
     id,
     function(input, output, session) {
-      return(reactive({ }))
+      return(shiny::reactive({ }))
     }
   )
 }

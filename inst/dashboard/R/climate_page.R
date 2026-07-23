@@ -1,5 +1,5 @@
 climatePageUI <- function(id) {
-  ns <- NS(id)
+  ns <- shiny::NS(id)
   if (requireNamespace("CopernicusClimate")) {
     bslib::page_navbar(
       id = ns("climate_nav"),
@@ -21,11 +21,11 @@ climatePageUI <- function(id) {
 }
 
 climatePageServer <- function(id) {
-  moduleServer(
+  shiny::moduleServer(
     id,
     function(input, output, session) {
       if (!requireNamespace("CopernicusClimate"))
-        return(reactive({ }))
+        return(shiny::reactive({ }))
       search  <- climateSearchServer("searchMod")
       prepare <- climatePrepareServer("prepareMod", search)
       request <- climateRequestServer("requestMod", prepare)
@@ -33,23 +33,23 @@ climatePageServer <- function(id) {
       licens  <- climateLicensesServer("licensesMod")
       account <- climateAccountServer("accountMod")
       
-      observeEvent( search(), {
+      shiny::observeEvent( search(), {
         bslib::nav_select("climate_nav", "climate_prepare")
       })
       
-      observeEvent( prepare(), {
+      shiny::observeEvent( prepare(), {
         bslib::nav_select("climate_nav", "climate_request")
       })
       
-      observeEvent( request(), {
+      shiny::observeEvent( request(), {
         bslib::nav_select("climate_nav", "climate_jobs")
       })
       
-      observe({ jobs() })
-      observe({ licens() })
-      observe({ account() })
+      shiny::observe({ jobs() })
+      shiny::observe({ licens() })
+      shiny::observe({ account() })
       
-      return(reactive({ }))
+      return(shiny::reactive({ }))
     }
   )
 }

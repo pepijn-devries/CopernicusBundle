@@ -1,10 +1,10 @@
 climatePrepareUI <- function(id) {
-  ns <- NS(id)
-  tagList(
+  ns <- shiny::NS(id)
+  shiny::tagList(
     bslib::toolbar(
       gap = 5,
-      actionButton(ns("btnRequest"), "Prepare Request"),
-      textOutput(ns("txtProduct"))
+      shiny::actionButton(ns("btnRequest"), "Prepare Request"),
+      shiny::textOutput(ns("txtProduct"))
     ),
     bslib::layout_column_wrap(
       bslib::card(
@@ -17,19 +17,19 @@ climatePrepareUI <- function(id) {
       bslib::card(
         full_screen = TRUE,
         bslib::card_title("Filters"),
-        uiOutput(ns("subsetUI"))
+        shiny::uiOutput(ns("subsetUI"))
       )
     )
   )
 }
 
 climatePrepareServer <- function(id, product) {
-  moduleServer(id, function(input, output, session) {
+  shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
-    request <- reactiveVal(NULL)
+    request <- shiny::reactiveVal(NULL)
     bbox_mod <- geoboxServer("queryBbox")
     
-    form <- reactive({
+    form <- shiny::reactive({
       prod <- product()
       if (length(prod) == 0) {
         NULL
@@ -41,7 +41,7 @@ climatePrepareServer <- function(id, product) {
       }
     })
     
-    output$txtProduct <- renderText({
+    output$txtProduct <- shiny::renderText({
       pr <- form()$product$id
       if (is.null(pr)) {
         "Select a product in the 'search' tab first"
@@ -50,7 +50,7 @@ climatePrepareServer <- function(id, product) {
       }
     })
     
-    output$subsetUI <- renderUI({
+    output$subsetUI <- shiny::renderUI({
       prod <- form()$product
       fm   <- form()$form
       if (length(prod) == 0) {
@@ -59,7 +59,7 @@ climatePrepareServer <- function(id, product) {
         ext <- prod$extent[[1]]$temporal$interval |>
           unlist() |>
           lubridate::as_datetime()
-        
+
         widgets <-
           fm |>
           dplyr::rowwise() |>
@@ -67,14 +67,23 @@ climatePrepareServer <- function(id, product) {
             widget = list({
               det <- .data$details$details
               ## area is handled with leaflet widget:
-              if (.data$name == "area_group") {
+              if (is.na(.data$id) && .data$name != "licences") {
                 NULL
               } else {
                 widget_name <- ns(.data$name)
                 switch(
                   .data$type,
+                  DateRangeWidget = {
+                    shinyWidgets::airDatepickerInput(
+                      widget_name,
+                      range = TRUE,
+                      value = c(det$defaultStart, det$defaultEnd),
+                      minDate = det$minStart,
+                      maxDate = det$maxEnd
+                    )
+                  },
                   StringListWidget = {
-                    selectInput(
+                    shiny::selectInput(
                       widget_name,
                       .data$label,
                       choices = setNames(names(det$labels), det$labels),
@@ -85,7 +94,7 @@ climatePrepareServer <- function(id, product) {
                   StringChoiceWidget = {
                     nm <- names(det$values)
                     if (is.null(nm)) nm <- det$values
-                    selectInput(
+                    shiny::selectInput(
                       widget_name,
                       .data$label,
                       choices = setNames(nm, det$values),
@@ -128,7 +137,7 @@ climatePrepareServer <- function(id, product) {
                   },
                   ExclusiveGroupWidget = {
                     ## TODO this is a strange input field
-                    textInput(
+                    shiny::textInput(
                       widget_name,
                       .data$label,
                       value = det$default
@@ -156,8 +165,8 @@ climatePrepareServer <- function(id, product) {
                       ) |>
                       dplyr::select(!tidyr::any_of("attachment_url")) |>
                       dplyr::rename(contents = "contents_url")
-                    tagList(
-                      tags$label(
+                    shiny::tagList(
+                      shiny::tags$label(
                         "Licences",
                         class="control-label"
                       ),
@@ -178,30 +187,41 @@ climatePrepareServer <- function(id, product) {
                     ## TODO check if we need this widget
                     NULL
                   },
+                  GeographicLocationWidget = {
+                    NULL ## TODO Not handled yet
+                  },
                   GeographicExtentWidget = {
                     NULL ## Handled in separate panel with leaflet
                   },
+                  ExclusiveGroupAccordionWidget = {
+                    ## Again a strange input field
+                    shiny::textInput(
+                      widget_name,
+                      .data$label,
+                      value = det$default
+                    )
+                  },
                   {
-                    "TODO not implemented"
+                    sprintf("'%s' not implemented, please report", .data$type)
                   }
                 )
               }
             })
           ) |>
           dplyr::pull(widget)
-        do.call(tagList, widgets)
+        do.call(shiny::tagList, widgets)
       }
     })
     
-    observeEvent(input$btnRequest, {
+    shiny::observeEvent(input$btnRequest, {
       pr <- form()$product$id
       if (is.null(pr)) {
-        modalDialog(
+        shiny::modalDialog(
           "Select a product in the 'search' tab first",
           title = "Warning!",
           easyClose = TRUE
         ) |>
-          showModal()
+          shiny::showModal()
         return()
       }
       req <- CopernicusClimate::cds_build_request(pr)
@@ -214,12 +234,17 @@ climatePrepareServer <- function(id, product) {
           if (fm$type[[idx]] %in%
               c("StringListWidget", "StringListArrayWidget")) {
             new_val <- as.list(new_val)
+          } else if (fm$type[[idx]] == "DateRangeWidget") {
+            new_val <- as.list(paste(
+              format.Date(new_val, "%Y-%m-%d"),
+              collapse = "/"
+            ))
           }
           req[[element]] <- new_val
         }
       }
       idx <- which(fm$type == "GeographicExtentWidget")
-      if (length(idx) > 0) {
+      if (length(idx) > 0 && !("GeographicLocationWidget" %in% fm$type)) {
         bbox <- bbox_mod() |> setNames(c("e", "s", "w", "n"))
         req[["area"]] <- bbox[c("n", "w", "s", "e")]
       }

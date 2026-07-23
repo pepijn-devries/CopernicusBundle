@@ -1,38 +1,38 @@
 authenticationUI <- function(id) {
-  ns <- NS(id)
+  ns <- shiny::NS(id)
 
   bslib::nav_menu(
     title = "Authentication",
     align = "right",
     bslib::nav_item(
-      actionButton(ns("TestAuthentication"), "Test Authentication")
+      shiny::actionButton(ns("TestAuthentication"), "Test Authentication")
     ),
     bslib::nav_item(
       if (requireNamespace("CopernicusClimate")) {
-        passwordInput(
+        shiny::passwordInput(
           ns("climate_token"), "Climate API token",
           Sys.getenv("ECMWF_DATASTORES_KEY"))
       } else {
         "Install CopernicusClimate if needed"
       },
       if (requireNamespace("CopernicusDataspace")) {
-        tagList(
-          textInput(
+        shiny::tagList(
+          shiny::textInput(
             ns("dse_uid"), "Dataspace username",
             Sys.getenv("CDSE_API_USERNAME")),
-          passwordInput(
+          shiny::passwordInput(
             ns("dse_pwd"), "Dataspace password",
             Sys.getenv("CDSE_API_PASSWORD")),
-          textInput(
+          shiny::textInput(
             ns("dse_clientid"), "Dataspace client id",
             Sys.getenv("CDSE_API_CLIENTID")),
-          passwordInput(
+          shiny::passwordInput(
             ns("dse_clientsecret"), "Dataspace client secret",
             Sys.getenv("CDSE_API_CLIENTSECRET")),
-          textInput(
+          shiny::textInput(
             ns("dse_s3id"), "Dataspace S3 ID",
             Sys.getenv("CDSE_API_S3ID")),
-          passwordInput(
+          shiny::passwordInput(
             ns("dse_s3secret"), "Dataspace S3 secret",
             Sys.getenv("CDSE_API_S3SECRET"))
         )
@@ -40,11 +40,11 @@ authenticationUI <- function(id) {
         "Install CopernicusDataspace if needed"
       },
       if (requireNamespace("CopernicusMarine")) {
-        tagList(
-          textInput(
+        shiny::tagList(
+          shiny::textInput(
             ns("marine_username"), "Marine username",
             Sys.getenv("COPERNICUSMARINE_SERVICE_USERNAME")),
-          passwordInput(
+          shiny::passwordInput(
             ns("marine_password"), "Marine password",
             Sys.getenv("COPERNICUSMARINE_SERVICE_PASSWORD"))
         )
@@ -56,35 +56,35 @@ authenticationUI <- function(id) {
 }
 
 authenticationServer <- function(id) {
-  moduleServer(
+  shiny::moduleServer(
     id,
     function(input, output, session) {
       ns <- session$ns
       
-      observeEvent(input$TestAuthentication, {
-        showModal(
-          modalDialog(
-            tabsetPanel(
-              tabPanel(
+      shiny::observeEvent(input$TestAuthentication, {
+        shiny::showModal(
+          shiny::modalDialog(
+            shiny::tabsetPanel(
+              shiny::tabPanel(
                 "CopernicusClimate",
                 if(requireNamespace("CopernicusClimate")) {
-                  verbatimTextOutput(ns("CCcheck"))
+                  shiny::verbatimTextOutput(ns("CCcheck"))
                 } else {
                   "Please install package CopernicusClimate first"
                 }
               ),
-              tabPanel(
+              shiny::tabPanel(
                 "CopernicusDataspace",
                 if(requireNamespace("CopernicusDataspace")) {
-                  verbatimTextOutput(ns("CDcheck"))
+                  shiny::verbatimTextOutput(ns("CDcheck"))
                 } else {
                   "Please install package CopernicusDataspace first"
                 }
               ),
-              tabPanel(
+              shiny::tabPanel(
                 "CopernicusMarine",
                 if(requireNamespace("CopernicusMarine")) {
-                  verbatimTextOutput(ns("CMcheck"))
+                  shiny::verbatimTextOutput(ns("CMcheck"))
                 } else {
                   "Please install package CopernicusMarine first"
                 }
@@ -97,12 +97,12 @@ authenticationServer <- function(id) {
         )
       })
       
-      output$CCcheck <- renderText({
+      output$CCcheck <- shiny::renderText({
         CopernicusClimate::cds_check_authentication() |>
           jsonlite::toJSON(, pretty = TRUE, auto_unbox = TRUE)
       })
 
-      output$CDcheck <- renderText({
+      output$CDcheck <- shiny::renderText({
         input$TestAuthentication ## make sure to trigger on button click
         paste(
           tryCatch({
@@ -118,7 +118,7 @@ authenticationServer <- function(id) {
         )
       })
       
-      output$CMcheck <- renderText({
+      output$CMcheck <- shiny::renderText({
         tryCatch({
           CopernicusMarine::cms_login() |>
             jsonlite::toJSON(, pretty = TRUE, auto_unbox = TRUE)
@@ -135,7 +135,7 @@ authenticationServer <- function(id) {
         }, error = \(e) "S3 credentials failed")
       }
  
-      observe({
+      shiny::observe({
         if (requireNamespace("CopernicusDataspace")) {
           memoise::forget(CopernicusDataspace::dse_public_access_token)
           memoise::forget(CopernicusDataspace::dse_access_token)
@@ -151,7 +151,7 @@ authenticationServer <- function(id) {
         Sys.setenv(COPERNICUSMARINE_SERVICE_PASSWORD = input$marine_password)
       })
       
-      return(reactive({ }))
+      return(shiny::reactive({ }))
     }
   )
 }

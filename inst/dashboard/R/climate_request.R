@@ -1,27 +1,27 @@
 climateRequestUI <- function(id) {
-  ns <- NS(id)
+  ns <- shiny::NS(id)
   bslib::layout_column_wrap(
     bslib::card(
       full_screen = TRUE,
       bslib::card_title("R Code"),
-      verbatimTextOutput(ns("txtRequest"))
+      shiny::verbatimTextOutput(ns("txtRequest"))
     ),
     bslib::card(
       full_screen = TRUE,
       bslib::card_title("Request status"),
-      verbatimTextOutput(ns("txtStatus")),
-      actionButton(ns("btnSubmit"), "Submit request")
+      shiny::verbatimTextOutput(ns("txtStatus")),
+      shiny::actionButton(ns("btnSubmit"), "Submit request")
     )
   )
 }
 
 climateRequestServer <- function(id, request_form) {
-  moduleServer(
+  shiny::moduleServer(
     id,
     function(input, output, session) {
-      latest_job <- reactiveVal()
+      latest_job <- shiny::reactiveVal()
       
-      output$txtRequest <- renderText({
+      output$txtRequest <- shiny::renderText({
         rf <- request_form()
         if (is.null(rf)) {
           "Compose request in 'prepare' tab and click 'request' first"
@@ -30,7 +30,7 @@ climateRequestServer <- function(id, request_form) {
         }
       })
       
-      costs <- reactive({
+      costs <- shiny::reactive({
         rf <- request_form()
         if (is.null(rf)) {
           NULL
@@ -41,11 +41,11 @@ climateRequestServer <- function(id, request_form) {
         }
       })
       
-      output$txtStatus <- renderText({
+      output$txtStatus <- shiny::renderText({
         deparse(costs())
       })
       
-      observeEvent(
+      shiny::observeEvent(
         input$btnSubmit, {
           cst <- costs()
           msg <- ""
@@ -58,8 +58,8 @@ climateRequestServer <- function(id, request_form) {
           }
           if (msg != "") {
             
-            modalDialog( msg, title = "Warning") |>
-              showModal()
+            shiny::modalDialog( msg, title = "Warning") |>
+              shiny::showModal()
             
           } else {
             job_id <- 
