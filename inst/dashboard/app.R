@@ -11,6 +11,8 @@ ui <- bslib::page_navbar(
                    icon = shiny::tags$img(src = "logo-dataspace.png", height = "24px", style = "margin-right: 5px;")),
   bslib::nav_panel("CopernicusMarine",    marinePageUI("marine"),
                    icon = shiny::tags$img(src = "logo-marine.png", height = "24px", style = "margin-right: 5px;")),
+  bslib::nav_panel("About",               aboutUI("about"),
+                   icon = shiny::icon("info")),
   lang    = "en-GB",
   bslib::nav_spacer(),
   authenticationUI("mod_auth")
@@ -21,6 +23,7 @@ server <- function(input, output, session) {
   climate   <- climatePageServer("climate")
   dataspace <- dataspacePageServer("dataspace")
   marine    <- marinePageServer("marine")
+  about     <- aboutServer("about")
   
   shiny::observe({ auth() })
   shiny::observe({ climate() })

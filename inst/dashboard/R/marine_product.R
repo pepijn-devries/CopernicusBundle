@@ -3,8 +3,9 @@ marineProductUI <- function(id) {
   shiny::tagList(
     shiny::actionButton(ns("btnUpdate"), "Update meta info"),
     shiny::textOutput(ns("txtProduct")),
-    selectInput(ns("selectDataset"), "Dataset", NULL),
-    shiny::uiOutput(ns("subsetUI"))
+    shiny::uiOutput(ns("datasetUI")),
+    shiny::uiOutput(ns("assetUI")),
+    shiny::uiOutput(ns("varUI"))
   )
 }
 
@@ -34,45 +35,70 @@ marineProductServer <- function(id, product) {
           }, error = \(e) NULL)
         }
       })
-
-      shiny::observeEvent(product_meta(), {
+      
+      get_datasets <- shiny::reactive({
         meta <- product_meta()
         descript <- lapply(meta$properties, \(x) {
           if (is.null(x$admp_title)) "No description" else
             x$admp_title
         }) |>
           unlist()
-        if (!is.null(meta)) {
-          shiny::updateSelectInput(
-            "selectDataset",
-            choices = meta$id |> setNames(descript),
-            selected = meta$id[[1]],
-            session = session
+        setNames(meta$id, descript)
+      })
+      
+      get_layer <- shiny::reactive({
+        meta <- product_meta()
+        dataset <- input$selectDataset
+        if (length(meta) == 0 || is.null(dataset)) return(NULL)
+        meta |>
+          dplyr::filter(.data$id == dataset)    
+      })
+
+      output$datasetUI <- shiny::renderUI({
+        sets  <- get_datasets()
+        if (length(sets) == 0) return(NULL)
+        shiny::selectInput(
+          ns("selectDataset"),
+          "Data set",
+          sets,
+          sets[1])
+      })
+      
+      output$assetUI <- shiny::renderUI({
+        layer <- get_layer()
+        ast   <- names(layer$assets[[1]])
+        if (is.null(layer)) return("Select a product first")
+        shiny::selectInput(
+          ns("selectAsset"), "Assets",
+          ast,
+          ast[1])
+      })
+      
+      output$varUI <- shiny::renderUI({
+        layer <- get_layer()
+        if (is.null(layer)) {
+          return(NULL)
+        } else {
+          vars <-
+            layer |>
+            dplyr::pull("properties") |>
+            lapply(\(x) names(x[["cube:variables"]])) |>
+            unlist()
+          shiny::selectInput(
+            ns("selectVariable"),
+            "Variable",
+            vars,
+            multiple = TRUE
           )
         }
       })
-
-      output$subsetUI <- shiny::renderUI({
-        meta <- product_meta()
-        if (is.null(meta) || is.null(input$selectDataset))
-          return("Select a dataset first")
-        meta <- meta |>
-          dplyr::filter(id == input$selectDataset)
-        shiny::selectInput(
-          ns("selectAsset"), "Assets",
-          names(meta$assets[[1]]),
-          names(meta$assets[[1]])[[1]])
-      })
       
       get_asset <- shiny::reactive({
-        meta <- product_meta()
-        if (is.null(meta) || is.null(input$selectDataset) ||
-            is.null(input$selectAsset))
-          return(NULL)
-        meta <- meta |>
-          dplyr::filter(id == input$selectDataset)
-        browser() #TODO
-        meta$assets[[1]][[input$selectAsset]]
+        list(
+          layer    = get_layer(),
+          variable = input$selectVariable,
+          asset    = input$selectAsset
+        )
       })
       
       return(get_asset)

@@ -59,7 +59,7 @@ climatePrepareServer <- function(id, product) {
         ext <- prod$extent[[1]]$temporal$interval |>
           unlist() |>
           lubridate::as_datetime()
-        
+
         widgets <-
           fm |>
           dplyr::rowwise() |>
@@ -67,12 +67,21 @@ climatePrepareServer <- function(id, product) {
             widget = list({
               det <- .data$details$details
               ## area is handled with leaflet widget:
-              if (.data$name == "area_group") {
+              if (is.na(.data$id) && .data$name != "licences") {
                 NULL
               } else {
                 widget_name <- ns(.data$name)
                 switch(
                   .data$type,
+                  DateRangeWidget = {
+                    shinyWidgets::airDatepickerInput(
+                      widget_name,
+                      range = TRUE,
+                      value = c(det$defaultStart, det$defaultEnd),
+                      minDate = det$minStart,
+                      maxDate = det$maxEnd
+                    )
+                  },
                   StringListWidget = {
                     shiny::selectInput(
                       widget_name,
@@ -178,11 +187,22 @@ climatePrepareServer <- function(id, product) {
                     ## TODO check if we need this widget
                     NULL
                   },
+                  GeographicLocationWidget = {
+                    NULL ## TODO Not handled yet
+                  },
                   GeographicExtentWidget = {
                     NULL ## Handled in separate panel with leaflet
                   },
+                  ExclusiveGroupAccordionWidget = {
+                    ## Again a strange input field
+                    shiny::textInput(
+                      widget_name,
+                      .data$label,
+                      value = det$default
+                    )
+                  },
                   {
-                    "TODO not implemented"
+                    sprintf("'%s' not implemented, please report", .data$type)
                   }
                 )
               }
@@ -214,12 +234,17 @@ climatePrepareServer <- function(id, product) {
           if (fm$type[[idx]] %in%
               c("StringListWidget", "StringListArrayWidget")) {
             new_val <- as.list(new_val)
+          } else if (fm$type[[idx]] == "DateRangeWidget") {
+            new_val <- as.list(paste(
+              format.Date(new_val, "%Y-%m-%d"),
+              collapse = "/"
+            ))
           }
           req[[element]] <- new_val
         }
       }
       idx <- which(fm$type == "GeographicExtentWidget")
-      if (length(idx) > 0) {
+      if (length(idx) > 0 && !("GeographicLocationWidget" %in% fm$type)) {
         bbox <- bbox_mod() |> setNames(c("e", "s", "w", "n"))
         req[["area"]] <- bbox[c("n", "w", "s", "e")]
       }

@@ -1,7 +1,7 @@
 marineAssetUI <- function(id) {
   ns <- shiny::NS(id)
   shiny::tagList(
-    "TODO"
+    zarrUI(ns("zarr_mod"))
   )
 }
 
@@ -9,14 +9,9 @@ marineAssetServer <- function(id, asset) {
   shiny::moduleServer(
     id,
     function(input, output, session) {
-      shiny::observe({
-        
-        if (is.null(asset())) return(NULL)
-        vsi <- CopernicusMarine:::.uri_to_vsi(asset()$href)
-#TODO
-        #        proxy <- CopernicusMarine:::.get_stars_proxy(vsi, NULL)
-        asset()
-      })
+      zarr <- zarrServer("zarr_mod", asset)
+
+      shiny::observe({ zarr() })
       
       return(shiny::reactive({ }))
     }

@@ -29,14 +29,12 @@ marinePageServer <- function(id) {
       account <- marineAccountServer("accountMod")
 
       shiny::observeEvent( search(), {
-        bslib::nav_select("marine_nav", "marine_product")
+        if (!is.null(search()))
+          bslib::nav_select("marine_nav", "marine_product")
       })
 
-      shiny::observeEvent( product(), {
-        bslib::nav_select("marine_nav", "marine_asset")
-      })
-      
       shiny::observe({ product() })
+      shiny::observe({ asset() })
       shiny::observe({ account() })
       
       return(shiny::reactive({ }))
