@@ -80,20 +80,22 @@ marineProductServer <- function(id, product) {
           return(NULL)
         } else {
           vars <-
-            layer |>
-            dplyr::pull("properties") |>
-            lapply(\(x) names(x[["cube:variables"]])) |>
-            unlist()
+            names(layer$properties[[1]]$`cube:variables`)
+          var_name <-
+            layer$properties[[1]]$`cube:variables` |>
+            lapply(\(x) x$name) |> unlist() |> unname()
           shiny::selectInput(
             ns("selectVariable"),
             "Variable",
-            vars,
+            vars |> setNames(var_name),
             multiple = TRUE
           )
         }
       })
       
       get_asset <- shiny::reactive({
+        if (length(get_layer()) == 0 || is.null(input$selectAsset))
+          return(NULL)
         list(
           layer    = get_layer(),
           variable = input$selectVariable,

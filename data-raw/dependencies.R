@@ -38,7 +38,7 @@ file_content <- c(
   "#' @title Internal Dummy Dependencies",
   "#' @description This file automatically registers dependencies used only in inst/.",
   roxygen_lines,
-  "#' @importFrom rlang .data !!",
+  "#' @importFrom rlang .data !! !!!",
   "#' @noRd",
   "NULL"
 )

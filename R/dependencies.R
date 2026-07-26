@@ -13,9 +13,10 @@
 #' @importFrom memoise forget
 #' @importFrom promises future_promise
 #' @importFrom sf st_bbox st_intersects
-#' @importFrom shiny actionButton div ExtendedTask fluidPage getShinyOption HTML icon modalButton modalDialog moduleServer NS numericInput observe observeEvent outputOptions passwordInput reactive reactiveVal removeModal renderText renderUI selectInput shinyApp showModal stopApp tabPanel tabsetPanel tagList tags textInput textOutput uiOutput updateSelectInput verbatimTextOutput
+#' @importFrom shiny actionButton div ExtendedTask fluidPage getShinyOption HTML icon modalButton modalDialog moduleServer NS numericInput observe observeEvent outputOptions passwordInput reactive reactiveVal removeModal renderText renderUI selectInput shinyApp showModal sliderInput stopApp tabPanel tabsetPanel tagList tags textInput textOutput uiOutput verbatimTextOutput
 #' @importFrom shinyvalidate compose_rules InputValidator sv_optional sv_regex
 #' @importFrom shinyWidgets airDatepickerInput numericRangeInput searchInput virtualSelectInput
+#' @importFrom stars st_dimensions st_get_dimension_values
 #' @importFrom tidyr any_of as_tibble starts_with unnest
 #' @importFrom rlang .data !!
 #' @noRd
