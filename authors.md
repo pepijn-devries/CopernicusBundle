@@ -10,13 +10,13 @@
 ## Citation
 
 de Vries P (2026). *CopernicusBundle: Bundle of Copernicus Packages*. R
-package version 0.0.0.9002,
+package version 0.0.0.9003,
 <https://pepijn-devries.github.io/CopernicusBundle/>.
 
     @Manual{,
       title = {CopernicusBundle: Bundle of Copernicus Packages},
       author = {Pepijn {de Vries}},
       year = {2026},
-      note = {R package version 0.0.0.9002},
+      note = {R package version 0.0.0.9003},
       url = {https://pepijn-devries.github.io/CopernicusBundle/},
     }
