@@ -1,11 +1,25 @@
 marineProductUI <- function(id) {
   ns <- shiny::NS(id)
-  shiny::tagList(
-    shiny::actionButton(ns("btnUpdate"), "Update meta info"),
-    shiny::textOutput(ns("txtProduct")),
-    shiny::uiOutput(ns("datasetUI")),
-    shiny::uiOutput(ns("assetUI")),
-    shiny::uiOutput(ns("varUI"))
+  bslib::layout_columns(
+    col_widths = c(3, 9),
+    bslib::card(
+      full_screen = TRUE,
+      bslib::card_title("Select asset"),
+      bslib::card_body(
+        shiny::actionButton(ns("btnUpdate"), "Update meta info"),
+        shiny::textOutput(ns("txtProduct")),
+        shiny::uiOutput(ns("datasetUI")),
+        shiny::uiOutput(ns("assetUI")),
+        shiny::uiOutput(ns("varUI"))
+      )
+    ),
+    bslib::card(
+      full_screen = TRUE,
+      bslib::card_title("Handle asset"),
+      bslib::card_body(
+        marineAssetUI(ns("assetMod"))
+      )
+    )
   )
 }
 
@@ -14,7 +28,10 @@ marineProductServer <- function(id, product) {
     id,
     function(input, output, session) {
       ns <- session$ns
-
+      asset <- marineAssetServer("assetMod", get_asset)
+      
+      shiny::observe({ asset() })
+      
       output$txtProduct <- shiny::renderText({
         prod <- product()
         if (is.null(prod)) {
@@ -80,20 +97,22 @@ marineProductServer <- function(id, product) {
           return(NULL)
         } else {
           vars <-
-            layer |>
-            dplyr::pull("properties") |>
-            lapply(\(x) names(x[["cube:variables"]])) |>
-            unlist()
+            names(layer$properties[[1]]$`cube:variables`)
+          var_name <-
+            layer$properties[[1]]$`cube:variables` |>
+            lapply(\(x) x$name) |> unlist() |> unname()
           shiny::selectInput(
             ns("selectVariable"),
             "Variable",
-            vars,
+            vars |> setNames(var_name),
             multiple = TRUE
           )
         }
       })
       
       get_asset <- shiny::reactive({
+        if (length(get_layer()) == 0 || is.null(input$selectAsset))
+          return(NULL)
         list(
           layer    = get_layer(),
           variable = input$selectVariable,

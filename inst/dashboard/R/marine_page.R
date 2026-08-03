@@ -6,8 +6,6 @@ marinePageUI <- function(id) {
       bslib::nav_panel("Search",  marineSearchUI(ns("searchMod"))),
       bslib::nav_panel("Product", marineProductUI(ns("productMod")),
                        value = "marine_product"),
-      bslib::nav_panel("Asset",   marineAssetUI(ns("assetMod")),
-                       value = "marine_asset"),
       bslib::nav_panel("Account", marineAccountUI(ns("accountMod")))
     )
   } else {
@@ -25,7 +23,6 @@ marinePageServer <- function(id) {
         return(shiny::reactive({ }))
       search  <- marineSearchServer("searchMod")
       product <- marineProductServer("productMod", search)
-      asset   <- marineAssetServer("assetMod", product)
       account <- marineAccountServer("accountMod")
 
       shiny::observeEvent( search(), {
@@ -34,7 +31,6 @@ marinePageServer <- function(id) {
       })
 
       shiny::observe({ product() })
-      shiny::observe({ asset() })
       shiny::observe({ account() })
       
       return(shiny::reactive({ }))
