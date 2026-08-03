@@ -1,7 +1,8 @@
 zarrUI <- function(id) {
   ns <- NS(id)
   shiny::tagList(
-    shiny::actionButton(ns("btnDownload"), "Download"),
+    ## TODO disable download button if no asset is selected
+    shiny::downloadButton(ns("btnDownload"), "Download"),
     shiny::uiOutput(ns("dimensionUI")),
     geoboxUI(ns("queryBbox")) # TODO hide/unhide based on queryables
   )
@@ -20,97 +21,90 @@ zarrServer <- function(id, asset) {
       
       bbox <- geoboxServer("queryBbox")
       
-      observeEvent(input$btnDownload, {
-        subs <- get_proxy_subset()
-        numthr <- Sys.getenv("GDAL_NUM_THREADS")
-        Sys.setenv(GDAL_NUM_THREADS = "ALL_CPUS")
-        Sys.setenv(GDAL_HTTP_MULTICURL = "YES")
-        Sys.setenv(GDAL_DISABLE_READDIR_ON_OPEN = "EMPTY_DIR")
-        tryCatch({
-          
-          # TODO dimensions get lost! See how CopernicusMarine package handles this
-          result <- stars::st_as_stars(subs)
-          for (dn in dimnames(subs)) {
-            old <- stars::st_get_dimension_values(subs, dn)
-            new <- stars::st_get_dimension_values(result, dn)
-            if (length(intersect(class(new), class(old))) == 0) {
-              result <-
-                stars::st_set_dimensions(result, dn, values = old)
-            }
-          }
-          result
+      output$btnDownload <- shiny::downloadHandler(
+        filename = \() {
+          ast <- asset()
+          if (is.null(ast)) "fail.nc" else
+            paste0(ast$layer$id, ".nc")
         },
-        error = \(e) NULL,
-        finally = {
-          Sys.setenv(GDAL_NUM_THREADS = numthr)
-        })
-      })
-      
-      get_proxy <- shiny::reactive({
+        content = \(file) {
+          obj <- get_stars_object()
+          CopernicusMarine::cms_write_ncdf(obj, file)
+        }
+      )
+
+      get_stars_object <- shiny::reactive({
+        selection <- get_selection()
         ast <- asset()
-        if (is.null(ast)) return(NULL)
-        href <- ast$layer$assets[[1]][[ast$asset]]$href
-        if (!endsWith(toupper(href), ".ZARR")) return(NULL)
-        tryCatch({
-          CopernicusMarine::cms_zarr_proxy(
-            ast$layer$collection,
-            ast$layer$id,
-            ast$variable,
-            ast$asset)
-        }, error = \(e) NULL)
+        if (!is.null(selection)) {
+          args <-
+            list(
+              product = ast$layer$collection,
+              layer = ast$layer$id,
+              variable = selection$variables,
+              asset = ast$asset
+            ) |>
+            c(selection$selection)
+          result <-
+            tryCatch({
+              do.call(
+                CopernicusMarine::cms_download_subset,
+                args)
+            }, error = \(e) NULL)
+        }
       })
-      
-      get_proxy_subset <- shiny::reactive({
-        proxy <- get_proxy()
-        if (!is.null(proxy)) {
-          dims <- stars::st_dimensions(proxy)
+
+      get_selection <- shiny::reactive({
+        ast <- asset()
+        if (!is.null(ast)) {
+          props <- ast$layer$properties[[1]]$`cube:dimensions`
           selection <- list()
-          bb <- bbox()
-          for (nm in names(dims)) {
+          selection <- list()
+          for (nm in names(props)) {
             widget_name <- paste0("dim_", nm)
-            dim_range <- input[[widget_name]] ## TODO Note that this does not trigger unless the dims change
-            dim_vals <- stars::st_get_dimension_values(proxy, nm)
+            val <- input[[widget_name]]
             if (nm == "time") {
-              dim_range <- lubridate::as_datetime(dim_vals)
-              dim_range <- lubridate::as_datetime(dim_range)
+              nm <- "timerange"
+              selection[[nm]] <- lubridate::as_datetime(val)
+            } else if (nm %in% c("longitude", "latitude")) {
+              next
+            } else if (nm == "elevation") {
+              nm <- "verticalrange"
+              vals <- props$elevation$values |> unlist()
+              
+              selection[[nm]] <- lapply(val, \(x) {
+                x <- abs(vals - as.numeric(x))
+                vals[x == min(x)]
+              }) |> unlist()
             } else {
-              dim_vals <- as.numeric(dim_vals)
-            }
-            if (is.null(dim_range)) {
-              if (nm == "longitude") dim_range <- bb[c(1, 3)]
-              if (nm == "latitude") dim_range <- bb[c(2, 4)]
-            }
-            if (length(dim_range) < 2L) {
-              selection[[nm]] <- integer()
-            } else {
-              selection[[nm]] <-
-                which(dim_vals >= dim_range[[1]] & dim_vals <= dim_range[[2]])
+              selection[[nm]] <- as.numeric(val)
             }
           }
+          selection[["region"]] <- bbox()
           
           if (!(length(selection) == 0 || any(lengths(selection) == 0))) {
-            ast <- asset()
             vars <- ast$variable
             if (is.null(vars)) {
               vars <- names(ast$layer$properties[[1]]$`cube:variables`)
             }
-            # TODO select statement doesn't work!
-            # rlang:::inject(proxy[,!!!selection]) |>
-            #   dplyr::select(dplyr::any_of(vars))
-            rlang:::inject(proxy[,!!!selection])
+            return(list(
+              variables = vars,
+              selection = selection
+            ))
+          } else {
+            return(NULL)
           }
         }
       })
-      
+
       output$dimensionUI <- shiny::renderUI({
-        proxy <- get_proxy()
-        if (!is.null(proxy)) {
-          dims <- stars::st_dimensions(proxy)
-          ast  <- asset()
+        ast <- asset()
+        props <- ast$layer$properties[[1]]$`cube:dimensions`
+        if (!is.null(ast)) {
           widgets <- list()
-          for (nm in names(dims)) {
+          for (nm in names(props)) {
             if (!(nm %in% c("longitude", "latitude"))) {
-              prop <- ast$layer$properties[[1]]$`cube:dimensions`[[nm]]
+              prop <- props[[nm]]
               widget_name <- ns(paste0("dim_", nm))
               
               widgets[[nm]] <-
@@ -132,17 +126,12 @@ zarrServer <- function(id, asset) {
                     digits <- floor(6 - log10(diff(extent))) |>
                       c(0) |> max()
                     
-                    extent <-
-                      round(extent + c(-1, 1)*10^-digits,
-                            digits)
-                    shiny::sliderInput(
+                    vals <- round(unlist(prop$values), digits = digits)
+                    shinyWidgets::sliderTextInput(
                       widget_name,
                       nm,
-                      value = extent,
-                      min = extent[[1]],
-                      max = extent[[2]],
-                      step = 10^-digits,
-                      round = -digits
+                      vals |> as.character(),
+                      range(vals) |> as.character()
                     )
                   },
                   "TODO not implemented"

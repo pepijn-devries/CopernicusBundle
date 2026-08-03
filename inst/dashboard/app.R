@@ -1,5 +1,10 @@
 future::plan(future::multisession) ## In order to handle long running searches
 
+options(
+  cli.num_colors = 1L,
+  cli.hyperlink = FALSE
+)
+
 ui <- bslib::page_navbar(
   title   = "CopernicusBundle",
   sidebar = bslib::sidebar(
