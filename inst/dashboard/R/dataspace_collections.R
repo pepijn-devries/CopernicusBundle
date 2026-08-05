@@ -10,7 +10,7 @@ dataspaceCollectionsServer <- function(id) {
     id,
     function(input, output, session) {
       collections <- shiny::ExtendedTask$new(\() {
-        promises::future_promise({
+        mirai::mirai({
           result <- NULL
           while (is.null(result)) {
             result <- tryCatch({
@@ -26,7 +26,6 @@ dataspaceCollectionsServer <- function(id) {
       output$collections <- DT::renderDT({
         busy <- data.frame(`Please wait while retrieving collections` = integer(),
                            check.names = FALSE)
-          
         dat <-
           switch(
             collections$status(),

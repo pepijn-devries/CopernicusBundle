@@ -12,7 +12,7 @@ dataspaceSearchResultServer <- function(id, search) {
       
       search_result <- shiny::ExtendedTask$new(\(srch) {
         if (is.null(srch)) return()
-        promises::future_promise({
+        mirai::mirai({
           bbox <- srch$bbox |>
             setNames(c("xmin", "ymin", "xmax", "ymax")) |>
             sf::st_bbox(crs = 4326)

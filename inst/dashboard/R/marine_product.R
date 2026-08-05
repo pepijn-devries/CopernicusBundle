@@ -83,8 +83,9 @@ marineProductServer <- function(id, product) {
       
       output$assetUI <- shiny::renderUI({
         layer <- get_layer()
+        if (is.null(layer) || nrow(layer) == 0)
+          return("Select a product first")
         ast   <- names(layer$assets[[1]])
-        if (is.null(layer)) return("Select a product first")
         shiny::selectInput(
           ns("selectAsset"), "Assets",
           ast,

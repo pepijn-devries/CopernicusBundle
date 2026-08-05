@@ -33,7 +33,7 @@ marineAssetServer <- function(id, asset) {
       
       observeEvent(asset(), {
         ast <- asset()
-        if (is.null(ast)) {
+        if (is.null(ast) || nrow(ast$layer) == 0) {
           ast <- "empty"
         } else {
           is_zarr <-

@@ -1,5 +1,3 @@
-future::plan(future::multisession) ## In order to handle long running searches
-
 options(
   cli.num_colors = 1L,
   cli.hyperlink = FALSE
@@ -8,6 +6,7 @@ options(
 ui <- bslib::page_navbar(
   title   = "CopernicusBundle",
   sidebar = bslib::sidebar(
+    shinyjs::useShinyjs(),
     "TODO"
   ),
   bslib::nav_panel("CopernicusClimate",   climatePageUI("climate"),
