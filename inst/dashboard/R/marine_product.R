@@ -28,6 +28,17 @@ marineProductServer <- function(id, product) {
     id,
     function(input, output, session) {
       ns <- session$ns
+      
+      get_asset <- shiny::reactive({
+        if (length(get_layer()) == 0 || is.null(input$selectAsset))
+          return(NULL)
+        list(
+          layer    = get_layer(),
+          variable = input$selectVariable,
+          asset    = input$selectAsset
+        )
+      })
+      
       asset <- marineAssetServer("assetMod", get_asset)
       
       shiny::observe({ asset() })
@@ -82,14 +93,17 @@ marineProductServer <- function(id, product) {
       })
       
       output$assetUI <- shiny::renderUI({
+        previous_asset <- input$selectAsset %||% "native"
+          
         layer <- get_layer()
         if (is.null(layer) || nrow(layer) == 0)
           return("Select a product first")
         ast   <- names(layer$assets[[1]])
+        if (!(previous_asset %in% ast))
+          previous_asset <- ast[1]
+        
         shiny::selectInput(
-          ns("selectAsset"), "Assets",
-          ast,
-          ast[1])
+          ns("selectAsset"), "Assets", ast, previous_asset)
       })
       
       output$varUI <- shiny::renderUI({
@@ -109,16 +123,6 @@ marineProductServer <- function(id, product) {
             multiple = TRUE
           )
         }
-      })
-      
-      get_asset <- shiny::reactive({
-        if (length(get_layer()) == 0 || is.null(input$selectAsset))
-          return(NULL)
-        list(
-          layer    = get_layer(),
-          variable = input$selectVariable,
-          asset    = input$selectAsset
-        )
       })
       
       return(get_asset)

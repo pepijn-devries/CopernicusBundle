@@ -1,8 +1,8 @@
 zarrUI <- function(id) {
   ns <- NS(id)
   shiny::tagList(
-    ## TODO disable download button if no asset is selected
-    shiny::downloadButton(ns("btnDownload"), "Download"),
+    shiny::downloadButton(ns("btnDownload"), "Download",
+                          enabled = FALSE),
     shiny::uiOutput(ns("dimensionUI")),
     geoboxUI(ns("queryBbox")) # TODO hide/unhide based on queryables
   )
@@ -20,6 +20,15 @@ zarrServer <- function(id, asset) {
       })
       
       bbox <- geoboxServer("queryBbox")
+
+      shiny::observe({
+        ast <- asset()
+        if (is.null(ast) || nrow(ast$layer) == 0) {
+          shinyjs::disable("btnDownload")
+        } else {
+          shinyjs::enable("btnDownload")
+        }
+      })
       
       output$btnDownload <- shiny::downloadHandler(
         filename = \() {

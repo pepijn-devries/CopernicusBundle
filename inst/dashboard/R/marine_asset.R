@@ -29,7 +29,7 @@ marineAssetServer <- function(id, asset) {
       ns <- session$ns
       zarr   <- zarrServer("zarr_mod", asset)
       native <- nativeServer("native_mod", asset)
-      wmts   <- nativeServer("wmts_mod", asset)
+      wmts   <- wmtsServer("wmts_mod", asset)
       
       observeEvent(asset(), {
         ast <- asset()

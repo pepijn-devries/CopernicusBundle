@@ -1,5 +1,3 @@
-#TODO fails when selecting a new product after another
-
 nativeUI <- function(id) {
   ns <- shiny::NS(id)
   bslib::layout_column_wrap(
@@ -9,7 +7,7 @@ nativeUI <- function(id) {
         full_screen = TRUE,
         bslib::card_header("Native Job"),
         bslib::card_body(
-          shiny::uiOutput(ns("nativeJobs")),
+          shiny::textOutput(ns("nativeJobs")),
           bslib::toolbar(
             shiny::actionButton(ns("btnCancel"), "Cancel"),
             shiny::actionButton(ns("btnPrepare"), "Fetch"),
@@ -36,90 +34,20 @@ nativeServer <- function(id, asset) {
     id,
     function(input, output, session) {
       active_mirai <- shiny::reactiveVal(NULL)
+      active_tree <- shiny::reactiveVal(NULL)
       
-      shiny::observe({
-        if (nativeTask$status() == "success") {
-          shinyjs::enable("btnDownload")
-        } else {
-          shinyjs::disable("btnDownload")
-        }
-      })
-
-      shiny::observe({
-        if (file_selected()) {
-          shinyjs::enable("btnPrepare")
-        } else {
-          shinyjs::disable("btnPrepare")
-        }
-      })
-
-      shiny::observe({
-        if (nativeTask$status() == "running") {
-          shinyjs::enable("btnCancel")
-        } else {
-          shinyjs::disable("btnCancel")
-        }
-      })
-      
-      output$btnDownload <- shiny::downloadHandler(\(){
-        if (nativeTask$status() == "success") {
-          fl <- nativeTask$result()
-          basename(fl$body)
-        } else {
-          stop("File retrieval failed")
-        }
-      }, \(file) {
-        if (nativeTask$status() == "success") {
-          fl <- nativeTask$result()
-          file.copy(fl$body, file)
-        } else {
-          stop("File retrieval failed")
-        }
-      })
-
-      my_tree <- shiny::reactive({
-        type_rules <- list(
-          folder = list(
-            icon = "glyphicon glyphicon-folder-open"
-          ),
-          file = list(
-            icon = "glyphicon glyphicon-file"
-          ),
-          empty = list(
-            icon = "glyphicon glyphicon-info-sign"
-          )
+      type_rules <- list(
+        folder = list(
+          icon = "glyphicon glyphicon-folder-open"
+        ),
+        file = list(
+          icon = "glyphicon glyphicon-file"
+        ),
+        empty = list(
+          icon = "glyphicon glyphicon-info-sign"
         )
-        ast <- asset()
-        if (is.null(ast)) {
-          jsTreeR::jstree(
-            theme = "proton",
-            types = type_rules,
-            list(list(text = "Select asset first", type = "empty"))
-          )
-        } else {
-          fls <-
-            CopernicusMarine::cms_list_native_files(
-              ast$layer$collection,
-              ast$layer$id) |>
-            dplyr::group_by(.data$Key) |>
-            dplyr::summarise(
-              details = list(dplyr::pick(dplyr::everything())))
-          fls <- structure(fls$details, names = fls$Key)
-          jsTreeR::jstree(
-            types = type_rules,
-            selectLeavesOnly = TRUE,
-            theme = "proton",
-            paths_to_jstree(fls)
-          )
-        }
-      })
-
-      shiny::observeEvent(input$btnCancel, {
-        job <- active_mirai()
-        if (mirai::is_mirai(job) && mirai::unresolved(job)) {
-          mirai::stop_mirai(job)
-        }
-      })
+      )
+      
 
       nativeTask <- shiny::ExtendedTask$new(\(native_file) {
         m <- mirai::mirai({
@@ -149,8 +77,116 @@ nativeServer <- function(id, asset) {
         return(m)
       })
       
+      shiny::observe({
+        if (nativeTask$status() == "success") {
+          shinyjs::enable("btnDownload")
+        } else {
+          shinyjs::disable("btnDownload")
+        }
+      })
+
+      shiny::observe({
+        if (file_selected()) {
+          shinyjs::enable("btnPrepare")
+        } else {
+          shinyjs::disable("btnPrepare")
+        }
+      })
+
+      shiny::observe({
+        if (nativeTask$status() == "running") {
+          shinyjs::enable("btnCancel")
+        } else {
+          shinyjs::disable("btnCancel")
+        }
+      })
+      
+      output$btnDownload <- shiny::downloadHandler(\(){
+        if (nativeTask$status() == "success" &&
+            !mirai::is_error_value(nativeTask)) {
+          fl <- nativeTask$result()
+          basename(fl$body)
+        } else {
+          stop("File retrieval failed")
+        }
+      }, \(file) {
+        if (nativeTask$status() == "success" &&
+            !mirai::is_error_value(nativeTask)) {
+          fl <- nativeTask$result()
+          file.copy(fl$body, file)
+        } else {
+          stop("File retrieval failed")
+        }
+      })
+
+      shiny::observeEvent(asset(), {
+        ast <- asset()
+        m <- active_tree()
+        if (mirai::is_mirai(m) && mirai::unresolved(m)) {
+          mirai::stop_mirai(m)
+        }
+        tree_task$invoke(ast)
+      })
+      
+      tree_task <- shiny::ExtendedTask$new(\(ast) {
+        m <- mirai::mirai({
+          if (is.null(ast)) {
+            jsTreeR::jstree(
+              theme = "proton",
+              types = type_rules,
+              list(list(text = "Select asset first", type = "empty"))
+            )
+          } else {
+            fls <-
+              CopernicusMarine::cms_list_native_files(
+                ast$layer$collection,
+                ast$layer$id) |>
+              dplyr::group_by(.data$Key) |>
+              dplyr::summarise(
+                details = list(dplyr::pick(dplyr::everything())))
+            fls <- structure(fls$details, names = fls$Key)
+            jsTreeR::jstree(
+              types = type_rules,
+              selectLeavesOnly = TRUE,
+              theme = "proton",
+              paths_to_jstree(fls)
+            )
+          }
+        }, ast = ast, paths_to_jstree = paths_to_jstree, type_rules = type_rules)
+        active_tree(m)
+        promises::then(
+          m,
+          onFulfilled = function(value) {
+            value
+          },
+          onRejected = function(err) {
+            if (grepl("Operation canceled", as.character(err))) {
+              return(NULL)
+            }
+            stop(err)
+          }
+        )
+      })
+      
+      shiny::observeEvent(input$btnCancel, {
+        job <- active_mirai()
+        if (mirai::is_mirai(job) && mirai::unresolved(job)) {
+          mirai::stop_mirai(job)
+        }
+      })
+
       output$treeFile <- jsTreeR::renderJstree({
-        my_tree()
+        if (tree_task$status() == "success" &&
+            !mirai::unresolved(tree_task$result()) &&
+            !mirai::is_error_value(tree_task$result())) {
+          tree_task$result()
+        } else {
+          jsTreeR::jstree(list(list(text = "Please wait...",
+                                    type = "empty",
+                                    state = list(disabled = TRUE))),
+                          theme = "proton",
+                          types = type_rules)
+        }
       })
       
       file_selected <- shiny::reactive({
@@ -168,7 +204,8 @@ nativeServer <- function(id, asset) {
           ) |>
             shiny::showModal()
         } else if (file_selected()) {
-          if (nativeTask$status() == "success") {
+          if (nativeTask$status() == "success" &&
+              !mirai::is_error_value(nativeTask$result())) {
             fl_old <- nativeTask$result()$body |> dirname()
             tryCatch({
               unlink(fl_old, TRUE, TRUE)
